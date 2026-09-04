@@ -1,16 +1,24 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
+
   <meta charset="UTF-8">
 
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
   <title>Nhập vật tư QR</title>
 
-  <!-- Thư viện quét QR -->
-  <script src="https://unpkg.com/html5-qrcode"
-          type="text/javascript"></script>
+
+  <!-- QR SCANNER -->
+
+  <script
+    src="https://unpkg.com/html5-qrcode"
+    type="text/javascript">
+  </script>
+
 
   <style>
 
@@ -18,675 +26,1069 @@
       box-sizing: border-box;
     }
 
+
     body {
+
       margin: 0;
+
       padding: 20px;
+
       background: #f3f4f6;
-      font-family: Arial, sans-serif;
+
+      font-family:
+        Arial,
+        sans-serif;
+
     }
+
 
     .container {
+
       width: 100%;
+
       max-width: 480px;
+
       margin: auto;
+
     }
+
 
     h1 {
+
       text-align: center;
+
       font-size: 24px;
+
       margin-bottom: 20px;
+
     }
+
 
     .card {
+
       background: white;
+
       border-radius: 16px;
+
       padding: 20px;
+
       margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      box-shadow:
+        0 2px 8px
+        rgba(0,0,0,0.08);
+
     }
 
+
     label {
+
       display: block;
+
       font-weight: bold;
+
       margin-top: 14px;
+
       margin-bottom: 6px;
+
     }
+
 
     input,
     textarea {
+
       width: 100%;
+
       padding: 13px;
-      border: 1px solid #d1d5db;
+
+      border:
+        1px solid #d1d5db;
+
       border-radius: 9px;
+
       font-size: 16px;
+
       background: white;
+
     }
+
 
     input[readonly] {
+
       background: #f1f5f9;
+
     }
+
 
     textarea {
+
       resize: vertical;
+
     }
+
 
     button {
+
       width: 100%;
+
       border: none;
+
       border-radius: 10px;
+
       padding: 14px;
+
       margin-top: 15px;
+
       font-size: 17px;
+
       font-weight: bold;
+
       cursor: pointer;
+
     }
+
 
     #scanButton {
+
       background: #111827;
+
       color: white;
+
     }
+
 
     #submitButton {
+
       background: #2563eb;
+
       color: white;
+
     }
+
+
+    #submitButton:disabled {
+
+      opacity: 0.6;
+
+      cursor: not-allowed;
+
+    }
+
 
     #reader {
+
       width: 100%;
+
       margin-top: 15px;
+
       overflow: hidden;
+
       border-radius: 10px;
+
     }
+
 
     #status {
+
       text-align: center;
+
       margin-top: 15px;
+
       font-weight: bold;
+
       min-height: 24px;
+
     }
+
 
     .success {
+
       color: #15803d;
+
     }
+
 
     .error {
+
       color: #dc2626;
+
     }
+
 
     .info {
+
       color: #374151;
+
     }
 
-    .hidden {
+
+    .hiddenFrame {
+
       display: none;
+
     }
 
   </style>
+
 </head>
+
 
 <body>
 
+
 <div class="container">
 
-  <h1>NHẬP VẬT TƯ QR</h1>
 
-  <!-- ========================= -->
-  <!-- KHU VỰC QUÉT QR -->
-  <!-- ========================= -->
+  <h1>
+    NHẬP VẬT TƯ QR
+  </h1>
+
+
+  <!-- ============================================= -->
+  <!-- QR -->
+  <!-- ============================================= -->
 
   <div class="card">
 
-    <button id="scanButton"
-            onclick="startScanner()">
+
+    <button
+      id="scanButton"
+      onclick="startScanner()">
 
       📷 QUÉT QR
 
     </button>
 
+
     <div id="reader"></div>
 
-    <div id="status"
-         class="info">
+
+    <div
+      id="status"
+      class="info">
     </div>
+
 
   </div>
 
 
-  <!-- ========================= -->
-  <!-- THÔNG TIN -->
-  <!-- ========================= -->
+  <!-- ============================================= -->
+  <!-- DATA -->
+  <!-- ============================================= -->
 
   <div class="card">
 
-    <label for="maVatTu">
+
+    <label>
       Mã vật tư
     </label>
 
-    <input id="maVatTu"
-           type="text"
-           readonly>
+
+    <input
+      id="maVatTu"
+      type="text"
+      readonly>
 
 
-    <label for="nhaCungCap">
+    <label>
       Đơn vị cung cấp
     </label>
 
-    <input id="nhaCungCap"
-           type="text"
-           readonly>
+
+    <input
+      id="nhaCungCap"
+      type="text"
+      readonly>
 
 
-    <label for="soLuong">
+    <label>
       Số lượng
     </label>
 
-    <input id="soLuong"
-           type="number"
-           min="1"
-           inputmode="numeric">
+
+    <input
+      id="soLuong"
+      type="number"
+      min="1"
+      inputmode="numeric">
 
 
-    <label for="nguoiNhap">
+    <label>
       Người nhập
     </label>
 
-    <input id="nguoiNhap"
-           type="text"
-           autocomplete="name">
+
+    <input
+      id="nguoiNhap"
+      type="text"
+      autocomplete="name">
 
 
-    <label for="ghiChu">
+    <label>
       Ghi chú
     </label>
 
-    <textarea id="ghiChu"
-              rows="3"></textarea>
+
+    <textarea
+      id="ghiChu"
+      rows="3">
+    </textarea>
 
 
-    <button id="submitButton"
-            onclick="submitData()">
+    <button
+      id="submitButton"
+      onclick="submitData()">
 
       GỬI DỮ LIỆU
 
     </button>
 
+
   </div>
+
 
 </div>
 
 
+<!-- ============================================= -->
+<!-- HIDDEN IFRAME -->
+<!-- ============================================= -->
+
+<iframe
+  id="submitFrame"
+  name="submitFrame"
+  class="hiddenFrame">
+</iframe>
+
+
 <script>
 
-  /*
-   * =====================================================
-   * URL GOOGLE APPS SCRIPT
-   * =====================================================
-   *
-   * DÁN URL WEB APP CỦA ANH VÀO GIỮA 2 DẤU NHÁY.
-   *
-   */
 
-  const API_URL =
-    'https://script.google.com/macros/s/AKfycby6at1PD83x1knfyIV9UYFd8-5uZMx8LrqLVrni1P2ot_RT6C4xku44fNeor83twkyy/exec';
+/**
+ * =====================================================
+ * URL APPS SCRIPT
+ * =====================================================
+ *
+ * DÁN URL /exec CỦA ANH VÀO ĐÂY.
+ */
 
+const API_URL =
+  'https://script.google.com/macros/s/AKfycby6at1PD83x1knfyIV9UYFd8-5uZMx8LrqLVrni1P2ot_RT6C4xku44fNeor83twkyy/exec';
 
-  /*
-   * =====================================================
-   * BIẾN HỆ THỐNG
-   * =====================================================
-   */
 
-  let scanner = null;
+/**
+ * =====================================================
+ * BIẾN
+ * =====================================================
+ */
 
-  let isScanning = false;
+let scanner = null;
 
+let isScanning = false;
 
-  /*
-   * =====================================================
-   * BẮT ĐẦU QUÉT QR
-   * =====================================================
-   */
+let waitingToken = null;
 
-  function startScanner() {
 
-    if (isScanning) {
-      return;
-    }
+/**
+ * =====================================================
+ * NHẬN KẾT QUẢ TỪ APPS SCRIPT
+ * =====================================================
+ */
 
-    document.getElementById('reader').innerHTML = '';
+window.addEventListener(
+  'message',
+  function(event) {
 
-    setStatus(
-      'Đang mở camera...',
-      'info'
-    );
+    const data =
+      event.data;
 
-    scanner = new Html5Qrcode('reader');
 
-    scanner.start(
-
-      {
-        facingMode: 'environment'
-      },
-
-      {
-        fps: 10,
-
-        qrbox: {
-          width: 250,
-          height: 250
-        }
-      },
-
-      function(decodedText) {
-
-        handleQRCode(decodedText);
-
-      },
-
-      function(errorMessage) {
-
-        // Không hiển thị lỗi liên tục
-        // vì scanner sẽ liên tục tìm QR.
-
-      }
-
-    )
-    .then(function() {
-
-      isScanning = true;
-
-      setStatus(
-        'Đưa QR vào khung camera.',
-        'info'
-      );
-
-    })
-    .catch(function(error) {
-
-      isScanning = false;
-
-      setStatus(
-        '❌ Không thể mở camera. ' +
-        'Hãy kiểm tra quyền Camera của trình duyệt.',
-        'error'
-      );
-
-      console.error(error);
-
-    });
-
-  }
-
-
-  /*
-   * =====================================================
-   * XỬ LÝ QR
-   * =====================================================
-   *
-   * QR có cấu trúc:
-   *
-   * MÃ VẬT TƯ|ĐƠN VỊ CUNG CẤP
-   *
-   * Ví dụ:
-   *
-   * VT00125|Công ty ABC
-   *
-   */
-
-  function handleQRCode(decodedText) {
-
-    if (!scanner) {
-      return;
-    }
-
-    scanner.stop()
-      .then(function() {
-
-        isScanning = false;
-
-        processQRCode(decodedText);
-
-      })
-      .catch(function(error) {
-
-        isScanning = false;
-
-        processQRCode(decodedText);
-
-      });
-
-  }
-
-
-  /*
-   * =====================================================
-   * TÁCH DỮ LIỆU QR
-   * =====================================================
-   */
-
-  function processQRCode(text) {
-
-    const parts = text.split('|');
-
-
-    if (parts.length < 2) {
-
-      setStatus(
-        '❌ QR không đúng định dạng.',
-        'error'
-      );
-
-      return;
-
-    }
-
-
-    const maVatTu =
-      parts[0].trim();
-
-    const nhaCungCap =
-      parts.slice(1)
-           .join('|')
-           .trim();
-
-
-    if (!maVatTu || !nhaCungCap) {
-
-      setStatus(
-        '❌ QR thiếu thông tin.',
-        'error'
-      );
-
-      return;
-
-    }
-
-
-    document.getElementById(
-      'maVatTu'
-    ).value = maVatTu;
-
-
-    document.getElementById(
-      'nhaCungCap'
-    ).value = nhaCungCap;
-
-
-    setStatus(
-      '✅ Đã quét QR thành công.',
-      'success'
-    );
-
-
-    /*
-     * Đưa con trỏ ngay vào ô Số lượng
-     */
-
-    document.getElementById(
-      'soLuong'
-    ).focus();
-
-  }
-
-
-  /*
-   * =====================================================
-   * GỬI DỮ LIỆU
-   * =====================================================
-   */
-
-  function submitData() {
-
-    const maVatTu =
-      document.getElementById(
-        'maVatTu'
-      ).value.trim();
-
-
-    const nhaCungCap =
-      document.getElementById(
-        'nhaCungCap'
-      ).value.trim();
-
-
-    const soLuong =
-      document.getElementById(
-        'soLuong'
-      ).value.trim();
-
-
-    const nguoiNhap =
-      document.getElementById(
-        'nguoiNhap'
-      ).value.trim();
-
-
-    const ghiChu =
-      document.getElementById(
-        'ghiChu'
-      ).value.trim();
-
-
-    /*
-     * Kiểm tra dữ liệu
-     */
-
-    if (!maVatTu || !nhaCungCap) {
-
-      setStatus(
-        '❌ Hãy quét QR trước.',
-        'error'
-      );
-
-      return;
-
-    }
-
-
-    if (!soLuong) {
-
-      setStatus(
-        '❌ Vui lòng nhập số lượng.',
-        'error'
-      );
-
-      return;
-
-    }
-
-
-    if (Number(soLuong) <= 0) {
-
-      setStatus(
-        '❌ Số lượng phải lớn hơn 0.',
-        'error'
-      );
-
-      return;
-
-    }
-
-
-    if (!nguoiNhap) {
-
-      setStatus(
-        '❌ Vui lòng nhập người nhập.',
-        'error'
-      );
-
-      return;
-
-    }
-
-
-    /*
-     * Kiểm tra URL
+    /**
+     * Chỉ nhận message
+     * đúng loại của hệ thống.
      */
 
     if (
-      API_URL ===
-      'PASTE_APPS_SCRIPT_URL_HERE'
+      !data ||
+      data.type !==
+      'QR_SUBMIT_RESULT'
     ) {
-
-      setStatus(
-        '❌ Chưa cấu hình URL Apps Script.',
-        'error'
-      );
 
       return;
 
     }
 
 
-    /*
-     * Hiển thị trạng thái
+    /**
+     * Kiểm tra token
      */
 
-    setStatus(
-      '⏳ Đang gửi dữ liệu...',
-      'info'
-    );
+    if (
+      waitingToken &&
+      data.clientToken !==
+      waitingToken
+    ) {
+
+      return;
+
+    }
 
 
-    document.getElementById(
-      'submitButton'
-    ).disabled = true;
+    waitingToken = null;
 
 
-    /*
-     * Gửi POST tới Apps Script
-     */
-
-    const formData =
-      new URLSearchParams();
-
-
-    formData.append(
-      'maVatTu',
-      maVatTu
-    );
-
-    formData.append(
-      'nhaCungCap',
-      nhaCungCap
-    );
-
-    formData.append(
-      'soLuong',
-      soLuong
-    );
-
-    formData.append(
-      'nguoiNhap',
-      nguoiNhap
-    );
-
-    formData.append(
-      'ghiChu',
-      ghiChu
-    );
-
-
-    fetch(
-      API_URL,
-      {
-        method: 'POST',
-
-        body: formData
-      }
-    )
-
-    .then(function(response) {
-
-      return response.text();
-
-    })
-
-    .then(function(result) {
-
+    const button =
       document.getElementById(
         'submitButton'
-      ).disabled = false;
-
-
-      if (
-        result.includes('"success":true')
-      ) {
-
-        setStatus(
-          '✅ Đã lưu dữ liệu thành công!',
-          'success'
-        );
-
-
-        /*
-         * Xóa các trường nhập tay
-         */
-
-        document.getElementById(
-          'soLuong'
-        ).value = '';
-
-        document.getElementById(
-          'nguoiNhap'
-        ).value = '';
-
-        document.getElementById(
-          'ghiChu'
-        ).value = '';
-
-
-      } else {
-
-        setStatus(
-          '❌ Không thể lưu dữ liệu.',
-          'error'
-        );
-
-        console.log(result);
-
-      }
-
-    })
-
-    .catch(function(error) {
-
-      document.getElementById(
-        'submitButton'
-      ).disabled = false;
-
-
-      setStatus(
-        '❌ Lỗi kết nối máy chủ.',
-        'error'
       );
 
 
-      console.error(error);
+    button.disabled = false;
+
+
+    /**
+     * Thành công
+     */
+
+    if (data.success) {
+
+      setStatus(
+        '✅ ' + data.message,
+        'success'
+      );
+
+
+      /**
+       * Xóa dữ liệu nhập tay
+       */
+
+      document.getElementById(
+        'soLuong'
+      ).value = '';
+
+
+      document.getElementById(
+        'nguoiNhap'
+      ).value = '';
+
+
+      document.getElementById(
+        'ghiChu'
+      ).value = '';
+
+
+      return;
+
+    }
+
+
+    /**
+     * Có lỗi
+     */
+
+    setStatus(
+      '❌ ' + data.message,
+      'error'
+    );
+
+  }
+);
+
+
+/**
+ * =====================================================
+ * CAMERA
+ * =====================================================
+ */
+
+function startScanner() {
+
+
+  if (isScanning) {
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    'reader'
+  ).innerHTML = '';
+
+
+  setStatus(
+    'Đang mở camera...',
+    'info'
+  );
+
+
+  scanner =
+    new Html5Qrcode(
+      'reader'
+    );
+
+
+  scanner.start(
+
+    {
+      facingMode:
+        'environment'
+    },
+
+
+    {
+      fps: 10,
+
+      qrbox: {
+
+        width: 250,
+
+        height: 250
+
+      }
+
+    },
+
+
+    function(decodedText) {
+
+      handleQRCode(
+        decodedText
+      );
+
+    },
+
+
+    function(errorMessage) {
+
+      // Không hiển thị lỗi
+      // liên tục.
+
+    }
+
+  )
+
+  .then(function() {
+
+    isScanning = true;
+
+
+    setStatus(
+      'Đưa QR vào khung camera.',
+      'info'
+    );
+
+  })
+
+
+  .catch(function(error) {
+
+    isScanning = false;
+
+
+    setStatus(
+      '❌ Không thể mở camera. ' +
+      'Hãy kiểm tra quyền Camera.',
+      'error'
+    );
+
+
+    console.error(error);
+
+  });
+
+}
+
+
+/**
+ * =====================================================
+ * XỬ LÝ QR
+ * =====================================================
+ */
+
+function handleQRCode(
+  decodedText
+) {
+
+
+  if (!scanner) {
+
+    return;
+
+  }
+
+
+  scanner.stop()
+
+    .then(function() {
+
+      isScanning = false;
+
+      processQRCode(
+        decodedText
+      );
+
+    })
+
+    .catch(function() {
+
+      isScanning = false;
+
+      processQRCode(
+        decodedText
+      );
 
     });
 
+}
+
+
+/**
+ * =====================================================
+ * TÁCH QR
+ * =====================================================
+ *
+ * Ví dụ:
+ *
+ * VT00125|Công ty ABC
+ *
+ */
+
+function processQRCode(
+  text
+) {
+
+
+  const parts =
+    text.split('|');
+
+
+  if (
+    parts.length < 2
+  ) {
+
+    setStatus(
+      '❌ QR không đúng định dạng.',
+      'error'
+    );
+
+    return;
+
   }
 
 
-  /*
-   * =====================================================
-   * HIỂN THỊ TRẠNG THÁI
-   * =====================================================
+  const maVatTu =
+    parts[0].trim();
+
+
+  const nhaCungCap =
+    parts
+      .slice(1)
+      .join('|')
+      .trim();
+
+
+  if (
+    !maVatTu ||
+    !nhaCungCap
+  ) {
+
+    setStatus(
+      '❌ QR thiếu thông tin.',
+      'error'
+    );
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    'maVatTu'
+  ).value =
+    maVatTu;
+
+
+  document.getElementById(
+    'nhaCungCap'
+  ).value =
+    nhaCungCap;
+
+
+  setStatus(
+    '✅ Đã quét QR thành công.',
+    'success'
+  );
+
+
+  document.getElementById(
+    'soLuong'
+  ).focus();
+
+}
+
+
+/**
+ * =====================================================
+ * GỬI DỮ LIỆU
+ * =====================================================
+ *
+ * KHÔNG DÙNG fetch().
+ *
+ * Dùng HTML FORM POST
+ * tới iframe ẩn.
+ *
+ */
+
+function submitData() {
+
+
+  const maVatTu =
+    document.getElementById(
+      'maVatTu'
+    ).value.trim();
+
+
+  const nhaCungCap =
+    document.getElementById(
+      'nhaCungCap'
+    ).value.trim();
+
+
+  const soLuong =
+    document.getElementById(
+      'soLuong'
+    ).value.trim();
+
+
+  const nguoiNhap =
+    document.getElementById(
+      'nguoiNhap'
+    ).value.trim();
+
+
+  const ghiChu =
+    document.getElementById(
+      'ghiChu'
+    ).value.trim();
+
+
+  /**
+   * Kiểm tra QR
    */
 
-  function setStatus(message, type) {
+  if (
+    !maVatTu ||
+    !nhaCungCap
+  ) {
 
-    const status =
-      document.getElementById('status');
+    setStatus(
+      '❌ Hãy quét QR trước.',
+      'error'
+    );
 
-    status.innerText = message;
-
-    status.className = type;
+    return;
 
   }
+
+
+  /**
+   * Kiểm tra số lượng
+   */
+
+  if (!soLuong) {
+
+    setStatus(
+      '❌ Vui lòng nhập số lượng.',
+      'error'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    Number(soLuong) <= 0
+  ) {
+
+    setStatus(
+      '❌ Số lượng phải lớn hơn 0.',
+      'error'
+    );
+
+    return;
+
+  }
+
+
+  /**
+   * Kiểm tra người nhập
+   */
+
+  if (!nguoiNhap) {
+
+    setStatus(
+      '❌ Vui lòng nhập người nhập.',
+      'error'
+    );
+
+    return;
+
+  }
+
+
+  /**
+   * Kiểm tra API URL
+   */
+
+  if (
+    API_URL ===
+    'PASTE_APPS_SCRIPT_URL_HERE'
+  ) {
+
+    setStatus(
+      '❌ Chưa cấu hình URL Apps Script.',
+      'error'
+    );
+
+    return;
+
+  }
+
+
+  /**
+   * Token riêng cho lần gửi này
+   */
+
+  const token =
+    Date.now().toString() +
+    '_' +
+    Math.random()
+      .toString(36)
+      .substring(2);
+
+
+  waitingToken =
+    token;
+
+
+  /**
+   * Khóa nút gửi
+   */
+
+  const button =
+    document.getElementById(
+      'submitButton'
+    );
+
+
+  button.disabled = true;
+
+
+  setStatus(
+    '⏳ Đang gửi dữ liệu...',
+    'info'
+  );
+
+
+  /**
+   * Tạo FORM
+   */
+
+  const form =
+    document.createElement(
+      'form'
+    );
+
+
+  form.method = 'POST';
+
+
+  form.action =
+    API_URL;
+
+
+  form.target =
+    'submitFrame';
+
+
+  /**
+   * Tạo các field ẩn
+   */
+
+  addHiddenField(
+    form,
+    'maVatTu',
+    maVatTu
+  );
+
+
+  addHiddenField(
+    form,
+    'nhaCungCap',
+    nhaCungCap
+  );
+
+
+  addHiddenField(
+    form,
+    'soLuong',
+    soLuong
+  );
+
+
+  addHiddenField(
+    form,
+    'nguoiNhap',
+    nguoiNhap
+  );
+
+
+  addHiddenField(
+    form,
+    'ghiChu',
+    ghiChu
+  );
+
+
+  addHiddenField(
+    form,
+    'clientToken',
+    token
+  );
+
+
+  /**
+   * Đưa form vào trang
+   */
+
+  document.body.appendChild(
+    form
+  );
+
+
+  /**
+   * Gửi
+   */
+
+  form.submit();
+
+
+  /**
+   * Xóa form tạm
+   */
+
+  setTimeout(
+    function() {
+
+      form.remove();
+
+    },
+    1000
+  );
+
+
+  /**
+   * Timeout an toàn
+   *
+   * Nếu 15 giây không nhận
+   * được phản hồi.
+   */
+
+  setTimeout(
+    function() {
+
+      if (
+        waitingToken === token
+      ) {
+
+        waitingToken = null;
+
+        button.disabled = false;
+
+        setStatus(
+          '❌ Không nhận được phản hồi từ máy chủ.',
+          'error'
+        );
+
+      }
+
+    },
+    15000
+  );
+
+}
+
+
+/**
+ * =====================================================
+ * TẠO INPUT ẨN
+ * =====================================================
+ */
+
+function addHiddenField(
+  form,
+  name,
+  value
+) {
+
+
+  const input =
+    document.createElement(
+      'input'
+    );
+
+
+  input.type =
+    'hidden';
+
+
+  input.name =
+    name;
+
+
+  input.value =
+    value;
+
+
+  form.appendChild(
+    input
+  );
+
+}
+
+
+/**
+ * =====================================================
+ * STATUS
+ * =====================================================
+ */
+
+function setStatus(
+  message,
+  type
+) {
+
+
+  const status =
+    document.getElementById(
+      'status'
+    );
+
+
+  status.innerText =
+    message;
+
+
+  status.className =
+    type;
+
+}
 
 </script>
 
+
 </body>
+
 </html>
