@@ -369,7 +369,10 @@
  * URL APPS SCRIPT
  * =====================================================
  *
- * DÁN URL /exec CỦA ANH VÀO ĐÂY.
+ * ANH THAY URL CỦA ANH VÀO ĐÂY.
+ *
+ * PHẢI LÀ URL /exec
+ * KHÔNG PHẢI /dev
  */
 
 const API_URL =
@@ -402,11 +405,6 @@ window.addEventListener(
     const data =
       event.data;
 
-
-    /**
-     * Chỉ nhận message
-     * đúng loại của hệ thống.
-     */
 
     if (
       !data ||
@@ -602,7 +600,7 @@ function startScanner() {
 
 /**
  * =====================================================
- * XỬ LÝ QR
+ * XỬ LÝ KHI QUÉT ĐƯỢC QR
  * =====================================================
  */
 
@@ -645,10 +643,10 @@ function handleQRCode(
 
 /**
  * =====================================================
- * TÁCH QR
+ * TÁCH DỮ LIỆU QR
  * =====================================================
  *
- * Ví dụ:
+ * QR có dạng:
  *
  * VT00125|Công ty ABC
  *
@@ -703,6 +701,10 @@ function processQRCode(
   }
 
 
+  /**
+   * Đưa dữ liệu QR vào form
+   */
+
   document.getElementById(
     'maVatTu'
   ).value =
@@ -721,6 +723,11 @@ function processQRCode(
   );
 
 
+  /**
+   * Chuyển con trỏ
+   * sang số lượng
+   */
+
   document.getElementById(
     'soLuong'
   ).focus();
@@ -733,9 +740,11 @@ function processQRCode(
  * GỬI DỮ LIỆU
  * =====================================================
  *
- * KHÔNG DÙNG fetch().
+ * QUAN TRỌNG:
  *
- * Dùng HTML FORM POST
+ * KHÔNG DÙNG fetch()
+ *
+ * Dùng FORM POST
  * tới iframe ẩn.
  *
  */
@@ -839,7 +848,7 @@ function submitData() {
 
 
   /**
-   * Kiểm tra API URL
+   * Kiểm tra URL
    */
 
   if (
@@ -858,7 +867,8 @@ function submitData() {
 
 
   /**
-   * Token riêng cho lần gửi này
+   * Tạo token riêng
+   * cho lần gửi
    */
 
   const token =
@@ -893,7 +903,9 @@ function submitData() {
 
 
   /**
-   * Tạo FORM
+   * ===================================================
+   * TẠO FORM POST
+   * ===================================================
    */
 
   const form =
@@ -902,7 +914,8 @@ function submitData() {
     );
 
 
-  form.method = 'POST';
+  form.method =
+    'POST';
 
 
   form.action =
@@ -914,7 +927,9 @@ function submitData() {
 
 
   /**
-   * Tạo các field ẩn
+   * ===================================================
+   * CÁC FIELD
+   * ===================================================
    */
 
   addHiddenField(
@@ -969,7 +984,7 @@ function submitData() {
 
 
   /**
-   * Gửi
+   * Gửi POST
    */
 
   form.submit();
@@ -990,10 +1005,9 @@ function submitData() {
 
 
   /**
-   * Timeout an toàn
-   *
-   * Nếu 15 giây không nhận
-   * được phản hồi.
+   * ===================================================
+   * TIMEOUT
+   * ===================================================
    */
 
   setTimeout(
@@ -1061,7 +1075,7 @@ function addHiddenField(
 
 /**
  * =====================================================
- * STATUS
+ * HIỂN THỊ TRẠNG THÁI
  * =====================================================
  */
 
