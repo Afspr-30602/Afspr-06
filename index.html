@@ -12,13 +12,19 @@
   <title>Nhập vật tư QR</title>
 
 
-  <!-- QR SCANNER -->
+  <!-- ================================================= -->
+  <!-- THƯ VIỆN QUÉT QR -->
+  <!-- ================================================= -->
 
   <script
     src="https://unpkg.com/html5-qrcode"
     type="text/javascript">
   </script>
 
+
+  <!-- ================================================= -->
+  <!-- GIAO DIỆN -->
+  <!-- ================================================= -->
 
   <style>
 
@@ -76,7 +82,7 @@
 
       box-shadow:
         0 2px 8px
-        rgba(0,0,0,0.08);
+        rgba(0, 0, 0, 0.08);
 
     }
 
@@ -221,13 +227,6 @@
 
     }
 
-
-    .hiddenFrame {
-
-      display: none;
-
-    }
-
   </style>
 
 </head>
@@ -239,14 +238,18 @@
 <div class="container">
 
 
+  <!-- ================================================= -->
+  <!-- TIÊU ĐỀ -->
+  <!-- ================================================= -->
+
   <h1>
     NHẬP VẬT TƯ QR
   </h1>
 
 
-  <!-- ============================================= -->
-  <!-- QR -->
-  <!-- ============================================= -->
+  <!-- ================================================= -->
+  <!-- QUÉT QR -->
+  <!-- ================================================= -->
 
   <div class="card">
 
@@ -272,9 +275,9 @@
   </div>
 
 
-  <!-- ============================================= -->
-  <!-- DATA -->
-  <!-- ============================================= -->
+  <!-- ================================================= -->
+  <!-- NHẬP DỮ LIỆU -->
+  <!-- ================================================= -->
 
   <div class="card">
 
@@ -350,29 +353,15 @@
 </div>
 
 
-<!-- ============================================= -->
-<!-- HIDDEN IFRAME -->
-<!-- ============================================= -->
-
-<iframe
-  id="submitFrame"
-  name="submitFrame"
-  class="hiddenFrame">
-</iframe>
-
-
 <script>
 
 
 /**
  * =====================================================
- * URL APPS SCRIPT
+ * URL GOOGLE APPS SCRIPT
  * =====================================================
  *
- * ANH THAY URL CỦA ANH VÀO ĐÂY.
- *
- * PHẢI LÀ URL /exec
- * KHÔNG PHẢI /dev
+ * ANH CHỈ THAY URL Ở ĐÂY.
  */
 
 const API_URL =
@@ -391,106 +380,7 @@ let isScanning = false;
 
 let waitingToken = null;
 
-
-/**
- * =====================================================
- * NHẬN KẾT QUẢ TỪ APPS SCRIPT
- * =====================================================
- */
-
-window.addEventListener(
-  'message',
-  function(event) {
-
-    const data =
-      event.data;
-
-
-    if (
-      !data ||
-      data.type !==
-      'QR_SUBMIT_RESULT'
-    ) {
-
-      return;
-
-    }
-
-
-    /**
-     * Kiểm tra token
-     */
-
-    if (
-      waitingToken &&
-      data.clientToken !==
-      waitingToken
-    ) {
-
-      return;
-
-    }
-
-
-    waitingToken = null;
-
-
-    const button =
-      document.getElementById(
-        'submitButton'
-      );
-
-
-    button.disabled = false;
-
-
-    /**
-     * Thành công
-     */
-
-    if (data.success) {
-
-      setStatus(
-        '✅ ' + data.message,
-        'success'
-      );
-
-
-      /**
-       * Xóa dữ liệu nhập tay
-       */
-
-      document.getElementById(
-        'soLuong'
-      ).value = '';
-
-
-      document.getElementById(
-        'nguoiNhap'
-      ).value = '';
-
-
-      document.getElementById(
-        'ghiChu'
-      ).value = '';
-
-
-      return;
-
-    }
-
-
-    /**
-     * Có lỗi
-     */
-
-    setStatus(
-      '❌ ' + data.message,
-      'error'
-    );
-
-  }
-);
+let jsonpScript = null;
 
 
 /**
@@ -559,12 +449,12 @@ function startScanner() {
 
     function(errorMessage) {
 
-      // Không hiển thị lỗi
-      // liên tục.
+      // Không hiển thị lỗi liên tục.
 
     }
 
   )
+
 
   .then(function() {
 
@@ -600,7 +490,7 @@ function startScanner() {
 
 /**
  * =====================================================
- * XỬ LÝ KHI QUÉT ĐƯỢC QR
+ * QR ĐÃ ĐƯỢC QUÉT
  * =====================================================
  */
 
@@ -643,10 +533,10 @@ function handleQRCode(
 
 /**
  * =====================================================
- * TÁCH DỮ LIỆU QR
+ * XỬ LÝ QR
  * =====================================================
  *
- * QR có dạng:
+ * QR:
  *
  * VT00125|Công ty ABC
  *
@@ -701,10 +591,6 @@ function processQRCode(
   }
 
 
-  /**
-   * Đưa dữ liệu QR vào form
-   */
-
   document.getElementById(
     'maVatTu'
   ).value =
@@ -723,11 +609,6 @@ function processQRCode(
   );
 
 
-  /**
-   * Chuyển con trỏ
-   * sang số lượng
-   */
-
   document.getElementById(
     'soLuong'
   ).focus();
@@ -740,17 +621,22 @@ function processQRCode(
  * GỬI DỮ LIỆU
  * =====================================================
  *
- * QUAN TRỌNG:
+ * Dùng JSONP.
  *
- * KHÔNG DÙNG fetch()
- *
- * Dùng FORM POST
- * tới iframe ẩn.
+ * Không dùng:
+ * - fetch
+ * - CORS
+ * - iframe
+ * - postMessage
  *
  */
 
 function submitData() {
 
+
+  // ---------------------------------------------------
+  // Lấy dữ liệu
+  // ---------------------------------------------------
 
   const maVatTu =
     document.getElementById(
@@ -782,9 +668,9 @@ function submitData() {
     ).value.trim();
 
 
-  /**
-   * Kiểm tra QR
-   */
+  // ---------------------------------------------------
+  // Kiểm tra QR
+  // ---------------------------------------------------
 
   if (
     !maVatTu ||
@@ -801,9 +687,9 @@ function submitData() {
   }
 
 
-  /**
-   * Kiểm tra số lượng
-   */
+  // ---------------------------------------------------
+  // Kiểm tra số lượng
+  // ---------------------------------------------------
 
   if (!soLuong) {
 
@@ -831,9 +717,9 @@ function submitData() {
   }
 
 
-  /**
-   * Kiểm tra người nhập
-   */
+  // ---------------------------------------------------
+  // Kiểm tra người nhập
+  // ---------------------------------------------------
 
   if (!nguoiNhap) {
 
@@ -847,9 +733,9 @@ function submitData() {
   }
 
 
-  /**
-   * Kiểm tra URL
-   */
+  // ---------------------------------------------------
+  // Kiểm tra URL
+  // ---------------------------------------------------
 
   if (
     API_URL ===
@@ -866,10 +752,37 @@ function submitData() {
   }
 
 
-  /**
-   * Tạo token riêng
-   * cho lần gửi
-   */
+  // ---------------------------------------------------
+  // Không cho gửi 2 lần
+  // ---------------------------------------------------
+
+  const button =
+    document.getElementById(
+      'submitButton'
+    );
+
+
+  if (
+    button.disabled
+  ) {
+
+    return;
+
+  }
+
+
+  button.disabled = true;
+
+
+  setStatus(
+    '⏳ Đang lưu dữ liệu...',
+    'info'
+  );
+
+
+  // ---------------------------------------------------
+  // Token
+  // ---------------------------------------------------
 
   const token =
     Date.now().toString() +
@@ -883,132 +796,139 @@ function submitData() {
     token;
 
 
-  /**
-   * Khóa nút gửi
-   */
+  // ---------------------------------------------------
+  // Tạo tên callback
+  // ---------------------------------------------------
 
-  const button =
-    document.getElementById(
-      'submitButton'
-    );
-
-
-  button.disabled = true;
-
-
-  setStatus(
-    '⏳ Đang gửi dữ liệu...',
-    'info'
-  );
+  const callbackName =
+    'qrCallback_' +
+    Date.now() +
+    '_' +
+    Math.random()
+      .toString(36)
+      .substring(2);
 
 
-  /**
-   * ===================================================
-   * TẠO FORM POST
-   * ===================================================
-   */
+  // ---------------------------------------------------
+  // Tạo callback
+  // ---------------------------------------------------
 
-  const form =
+  window[callbackName] =
+    function(result) {
+
+      handleSubmitResult(
+        result,
+        callbackName
+      );
+
+    };
+
+
+  // ---------------------------------------------------
+  // Tạo URL
+  // ---------------------------------------------------
+
+  const params =
+    new URLSearchParams({
+
+      action:
+        'save',
+
+      callback:
+        callbackName,
+
+      maVatTu:
+        maVatTu,
+
+      nhaCungCap:
+        nhaCungCap,
+
+      soLuong:
+        soLuong,
+
+      nguoiNhap:
+        nguoiNhap,
+
+      ghiChu:
+        ghiChu,
+
+      clientToken:
+        token
+
+    });
+
+
+  const url =
+    API_URL +
+    '?' +
+    params.toString();
+
+
+  // ---------------------------------------------------
+  // Tạo SCRIPT
+  // ---------------------------------------------------
+
+  jsonpScript =
     document.createElement(
-      'form'
+      'script'
     );
 
 
-  form.method =
-    'POST';
+  jsonpScript.src =
+    url;
 
 
-  form.action =
-    API_URL;
+  jsonpScript.async =
+    true;
 
 
-  form.target =
-    'submitFrame';
+  // ---------------------------------------------------
+  // Nếu trình duyệt báo lỗi tải
+  // ---------------------------------------------------
 
-
-  /**
-   * ===================================================
-   * CÁC FIELD
-   * ===================================================
-   */
-
-  addHiddenField(
-    form,
-    'maVatTu',
-    maVatTu
-  );
-
-
-  addHiddenField(
-    form,
-    'nhaCungCap',
-    nhaCungCap
-  );
-
-
-  addHiddenField(
-    form,
-    'soLuong',
-    soLuong
-  );
-
-
-  addHiddenField(
-    form,
-    'nguoiNhap',
-    nguoiNhap
-  );
-
-
-  addHiddenField(
-    form,
-    'ghiChu',
-    ghiChu
-  );
-
-
-  addHiddenField(
-    form,
-    'clientToken',
-    token
-  );
-
-
-  /**
-   * Đưa form vào trang
-   */
-
-  document.body.appendChild(
-    form
-  );
-
-
-  /**
-   * Gửi POST
-   */
-
-  form.submit();
-
-
-  /**
-   * Xóa form tạm
-   */
-
-  setTimeout(
+  jsonpScript.onerror =
     function() {
 
-      form.remove();
+      if (
+        waitingToken !== token
+      ) {
 
-    },
-    1000
+        return;
+
+      }
+
+
+      waitingToken = null;
+
+
+      button.disabled = false;
+
+
+      setStatus(
+        '❌ Không kết nối được máy chủ.',
+        'error'
+      );
+
+
+      cleanupJSONP(
+        callbackName
+      );
+
+    };
+
+
+  // ---------------------------------------------------
+  // Đưa SCRIPT vào trang
+  // ---------------------------------------------------
+
+  document.body.appendChild(
+    jsonpScript
   );
 
 
-  /**
-   * ===================================================
-   * TIMEOUT
-   * ===================================================
-   */
+  // ---------------------------------------------------
+  // Timeout
+  // ---------------------------------------------------
 
   setTimeout(
     function() {
@@ -1019,11 +939,18 @@ function submitData() {
 
         waitingToken = null;
 
+
         button.disabled = false;
 
+
         setStatus(
-          '❌ Không nhận được phản hồi từ máy chủ.',
+          '❌ Máy chủ không phản hồi.',
           'error'
+        );
+
+
+        cleanupJSONP(
+          callbackName
         );
 
       }
@@ -1037,37 +964,114 @@ function submitData() {
 
 /**
  * =====================================================
- * TẠO INPUT ẨN
+ * NHẬN KẾT QUẢ
  * =====================================================
  */
 
-function addHiddenField(
-  form,
-  name,
-  value
+function handleSubmitResult(
+  result,
+  callbackName
 ) {
 
 
-  const input =
-    document.createElement(
-      'input'
+  if (
+    !result
+  ) {
+
+    return;
+
+  }
+
+
+  // ---------------------------------------------------
+  // Kiểm tra token
+  // ---------------------------------------------------
+
+  if (
+    waitingToken &&
+    result.clientToken !==
+    waitingToken
+  ) {
+
+    return;
+
+  }
+
+
+  waitingToken = null;
+
+
+  // ---------------------------------------------------
+  // Mở lại nút
+  // ---------------------------------------------------
+
+  const button =
+    document.getElementById(
+      'submitButton'
     );
 
 
-  input.type =
-    'hidden';
+  button.disabled = false;
 
 
-  input.name =
-    name;
+  // ---------------------------------------------------
+  // Thành công
+  // ---------------------------------------------------
+
+  if (
+    result.success
+  ) {
+
+    setStatus(
+      '✅ ' +
+      result.message,
+      'success'
+    );
 
 
-  input.value =
-    value;
+    // -----------------------------------------------
+    // Xóa dữ liệu nhập tay
+    // -----------------------------------------------
+
+    document.getElementById(
+      'soLuong'
+    ).value = '';
 
 
-  form.appendChild(
-    input
+    document.getElementById(
+      'nguoiNhap'
+    ).value = '';
+
+
+    document.getElementById(
+      'ghiChu'
+    ).value = '';
+
+
+  }
+
+
+  // ---------------------------------------------------
+  // Lỗi
+  // ---------------------------------------------------
+
+  else {
+
+    setStatus(
+      '❌ ' +
+      result.message,
+      'error'
+    );
+
+  }
+
+
+  // ---------------------------------------------------
+  // Dọn JSONP
+  // ---------------------------------------------------
+
+  cleanupJSONP(
+    callbackName
   );
 
 }
@@ -1075,7 +1079,54 @@ function addHiddenField(
 
 /**
  * =====================================================
- * HIỂN THỊ TRẠNG THÁI
+ * XÓA JSONP
+ * =====================================================
+ */
+
+function cleanupJSONP(
+  callbackName
+) {
+
+
+  try {
+
+    delete window[
+      callbackName
+    ];
+
+  }
+
+  catch (error) {
+
+    window[
+      callbackName
+    ] = undefined;
+
+  }
+
+
+  if (
+    jsonpScript &&
+    jsonpScript.parentNode
+  ) {
+
+    jsonpScript
+      .parentNode
+      .removeChild(
+        jsonpScript
+      );
+
+  }
+
+
+  jsonpScript = null;
+
+}
+
+
+/**
+ * =====================================================
+ * STATUS
  * =====================================================
  */
 
