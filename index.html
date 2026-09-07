@@ -4,165 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>QUÉT QR KHO VẬT TƯ</title>
-
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
 <style>
-*{
-  box-sizing:border-box
-}
-
-body{
-  margin:0;
-  padding:20px;
-  background:#f3f4f6;
-  font-family:Arial,sans-serif
-}
-
-.container{
-  width:100%;
-  max-width:480px;
-  margin:auto
-}
-
-h1{
-  text-align:center;
-  font-size:24px;
-  margin-bottom:20px
-}
-
-.card{
-  background:#fff;
-  border-radius:16px;
-  padding:20px;
-  margin-bottom:16px;
-  box-shadow:0 2px 8px rgba(0,0,0,.08)
-}
-
-label{
-  display:block;
-  font-weight:bold;
-  margin-top:14px;
-  margin-bottom:6px
-}
-
-input,
-textarea{
-  width:100%;
-  padding:13px;
-  border:1px solid #d1d5db;
-  border-radius:9px;
-  font-size:16px;
-  background:#fff
-}
-
-input[readonly]{
-  background:#f1f5f9
-}
-
-textarea{
-  resize:vertical
-}
-
-button{
-  width:100%;
-  border:none;
-  border-radius:10px;
-  padding:14px;
-  margin-top:15px;
-  font-size:17px;
-  font-weight:bold;
-  cursor:pointer
-}
-
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed
-}
-
-#scanButton{
-  background:#111827;
-  color:#fff
-}
-
-#flashButton{
-  background:#f59e0b;
-  color:#fff;
-  display:none
-}
-
-#flashButton.active{
-  background:#dc2626
-}
-
-#submitButton{
-  background:#2563eb;
-  color:#fff
-}
-
-#nextButton{
-  background:#16a34a;
-  color:#fff
-}
-
-#cameraBox{
-  display:none;
-  width:100%;
-  margin-top:15px;
-  position:relative;
-  overflow:hidden;
-  border-radius:12px;
-  background:#000;
-  aspect-ratio:1/1
-}
-
-#video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block
-}
-
-#scanFrame{
-  position:absolute;
-  width:62%;
-  height:62%;
-  left:19%;
-  top:19%;
-  border:3px solid #22c55e;
-  border-radius:16px;
-  pointer-events:none
-}
-
-#canvas{
-  display:none
-}
-
-#status{
-  text-align:center;
-  margin-top:15px;
-  font-weight:bold;
-  min-height:24px
-}
-
-.success{
-  color:#15803d
-}
-
-.error{
-  color:#dc2626
-}
-
-.info{
-  color:#374151
-}
-
-.hiddenFrame{
-  display:none;
-  width:0;
-  height:0;
-  border:0
-}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:#f3f4f6;font-family:Arial,sans-serif}
+.container{width:100%;max-width:480px;margin:auto}
+h1{text-align:center;font-size:24px;margin-bottom:20px}
+.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+label{display:block;font-weight:bold;margin-top:14px;margin-bottom:6px}
+input,textarea{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:9px;font-size:16px;background:#fff}
+input[readonly]{background:#f1f5f9}
+textarea{resize:vertical}
+button{width:100%;border:none;border-radius:10px;padding:14px;margin-top:15px;font-size:17px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}
+#scanButton{background:#111827;color:#fff}
+#flashButton{background:#f59e0b;color:#fff;display:none}
+#flashButton.active{background:#dc2626}
+#submitButton{background:#2563eb;color:#fff}
+#nextButton{background:#16a34a;color:#fff}
+#cameraBox{display:none;width:100%;margin-top:15px;position:relative;overflow:hidden;border-radius:12px;background:#000;aspect-ratio:1/1}
+#video{width:100%;height:100%;object-fit:cover;display:block}
+#scanFrame{position:absolute;width:62%;height:62%;left:19%;top:19%;border:3px solid #22c55e;border-radius:16px;pointer-events:none}
+#canvas{display:none}
+#status{text-align:center;margin-top:15px;font-weight:bold;min-height:24px}
+.success{color:#15803d}
+.error{color:#dc2626}
+.info{color:#374151}
+.hiddenFrame{display:none;width:0;height:0;border:0}
 </style>
 </head>
 
@@ -174,115 +43,60 @@ button:disabled{
 
 <div class="card">
 
-<button
-  id="scanButton"
-  onclick="startCamera()">
-  📷 QUÉT QR
-</button>
+<button id="scanButton" onclick="startCamera()">📷 QUÉT QR</button>
 
 <div id="cameraBox">
-
-<video
-  id="video"
-  autoplay
-  muted
-  playsinline>
-</video>
-
+<video id="video" autoplay muted playsinline></video>
 <div id="scanFrame"></div>
-
 </div>
 
-<canvas id="canvas"></canvas>
+<button id="flashButton" onclick="toggleFlash()">🔦 BẬT FLASH</button>
 
-<button
-  id="flashButton"
-  onclick="toggleFlash()">
-  🔦 BẬT ĐÈN
-</button>
-
-<div
-  id="status"
-  class="info">
-</div>
+<div id="status" class="info"></div>
 
 </div>
 
 <div class="card">
 
 <label>Mã sản phẩm</label>
-<input
-  id="maSanPham"
-  type="text"
-  readonly>
+<input id="maSanPham" type="text" readonly>
 
 <label>Tên sản phẩm</label>
-<input
-  id="tenSanPham"
-  type="text"
-  readonly>
+<input id="tenSanPham" type="text" readonly>
 
 <label>Lô sản phẩm</label>
-<input
-  id="loSanPham"
-  type="text"
-  readonly>
+<input id="loSanPham" type="text" readonly>
 
 <label>Đơn vị thùng</label>
-<input
-  id="donViThung"
-  type="text"
-  readonly>
+<input id="donViThung" type="text" readonly>
 
 <label>Số lượng xuất</label>
-<input
-  id="soLuongXuat"
-  type="number"
-  min="1"
-  inputmode="numeric">
+<input id="soLuongXuat" type="number" min="1" inputmode="numeric">
 
 <label>Người yêu cầu</label>
-<input
-  id="nguoiYeuCau"
-  type="text"
-  autocomplete="name">
+<input id="nguoiYeuCau" type="text" autocomplete="name">
 
 <label>Bộ phận</label>
-<input
-  id="boPhan"
-  type="text">
+<input id="boPhan" type="text">
 
 <label>Ghi chú</label>
-<textarea
-  id="ghiChu"
-  rows="3"></textarea>
+<textarea id="ghiChu" rows="3"></textarea>
 
-<button
-  id="submitButton"
-  onclick="submitData()">
-  GỬI DỮ LIỆU
-</button>
+<button id="submitButton" onclick="submitData()">GỬI DỮ LIỆU</button>
 
-<button
-  id="nextButton"
-  onclick="nextOrder()">
-  QUÉT LỆNH TIẾP THEO
-</button>
+<button id="nextButton" onclick="nextOrder()">QUÉT LỆNH TIẾP THEO</button>
 
 </div>
 
 </div>
 
-<iframe
-  id="submitFrame"
-  name="submitFrame"
-  class="hiddenFrame">
-</iframe>
+<canvas id="canvas"></canvas>
+
+<iframe id="submitFrame" name="submitFrame" class="hiddenFrame"></iframe>
 
 <script>
 
-const API_URL=
-'https://script.google.com/macros/s/AKfycby6at1PD83x1knfyIV9UYFd8-5uZMx8LrqLVrni1P2ot_RT6C4xku44fNeor83twkyy/exec';
+const API_URL='https://script.google.com/macros/s/AKfycby6at1PD83x1knfyIV9UYFd8-5uZMx8LrqLVrni1P2ot_RT6C4xku44fNeor83twkyy/exec';
 
 let cameraStream=null;
 let videoTrack=null;
@@ -292,119 +106,63 @@ let scanAnimation=null;
 let isSubmitting=false;
 let submitTimer=null;
 
-const video=
-  document.getElementById('video');
-
-const canvas=
-  document.getElementById('canvas');
-
-const context=
-  canvas.getContext(
-    '2d',
-    {
-      willReadFrequently:true
-    }
-  );
+const video=document.getElementById('video');
+const canvas=document.getElementById('canvas');
+const context=canvas.getContext('2d',{willReadFrequently:true});
 
 function setStatus(message,type){
-
-  const status=
-    document.getElementById('status');
-
+  const status=document.getElementById('status');
   status.textContent=message;
   status.className=type||'info';
 }
 
 async function startCamera(){
 
-  if(cameraRunning||isSubmitting){
-    return;
-  }
-
-  if(
-    !navigator.mediaDevices||
-    !navigator.mediaDevices.getUserMedia
-  ){
-
-    setStatus(
-      '❌ Trình duyệt không hỗ trợ camera.',
-      'error'
-    );
-
-    return;
-  }
+  if(cameraRunning||isSubmitting)return;
 
   try{
 
-    setStatus(
-      '⏳ Đang mở camera...',
-      'info'
-    );
+    setStatus('⏳ Đang mở camera...','info');
 
-    cameraStream=
-      await navigator.mediaDevices.getUserMedia({
-        video:{
-          facingMode:{
-            ideal:'environment'
-          },
-          width:{
-            ideal:1280
-          },
-          height:{
-            ideal:1280
-          }
-        },
-        audio:false
-      });
+    cameraStream=await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode:{ideal:'environment'},
+        width:{ideal:1280},
+        height:{ideal:1280}
+      },
+      audio:false
+    });
 
     video.srcObject=cameraStream;
 
     await video.play();
 
-    videoTrack=
-      cameraStream.getVideoTracks()[0];
+    videoTrack=cameraStream.getVideoTracks()[0];
 
     cameraRunning=true;
     flashOn=false;
 
-    document.getElementById(
-      'cameraBox'
-    ).style.display='block';
+    document.getElementById('cameraBox').style.display='block';
 
-    document.getElementById(
-      'flashButton'
-    ).style.display='block';
+    const flashButton=document.getElementById('flashButton');
 
-    document.getElementById(
-      'scanButton'
-    ).disabled=true;
+    flashButton.style.display='block';
+    flashButton.textContent='🔦 BẬT FLASH';
+    flashButton.classList.remove('active');
 
-    document.getElementById(
-      'flashButton'
-    ).textContent='🔦 BẬT ĐÈN';
+    document.getElementById('scanButton').disabled=true;
 
-    document.getElementById(
-      'flashButton'
-    ).classList.remove('active');
-
-    setStatus(
-      'Đưa QR vào khung camera.',
-      'info'
-    );
+    setStatus('Đưa QR vào khung camera.','info');
 
     scanQRCode();
 
   }catch(error){
 
     cameraRunning=false;
-
     cameraStream=null;
     videoTrack=null;
 
-    setStatus(
-      '❌ Không thể mở camera. Hãy cấp quyền Camera cho trình duyệt.',
-      'error'
-    );
+    setStatus('❌ Không thể mở camera. Hãy cấp quyền Camera cho trình duyệt.','error');
 
     console.error(error);
   }
@@ -412,21 +170,12 @@ async function startCamera(){
 
 function scanQRCode(){
 
-  if(!cameraRunning){
-    return;
-  }
+  if(!cameraRunning)return;
 
-  if(
-    video.readyState>=2&&
-    video.videoWidth>0&&
-    video.videoHeight>0
-  ){
+  if(video.readyState>=2&&video.videoWidth>0&&video.videoHeight>0){
 
-    canvas.width=
-      video.videoWidth;
-
-    canvas.height=
-      video.videoHeight;
+    canvas.width=video.videoWidth;
+    canvas.height=video.videoHeight;
 
     context.drawImage(
       video,
@@ -436,58 +185,42 @@ function scanQRCode(){
       canvas.height
     );
 
-    const imageData=
-      context.getImageData(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
+    const imageData=context.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
 
-    const code=
-      jsQR(
-        imageData.data,
-        imageData.width,
-        imageData.height,
-        {
-          inversionAttempts:
-            'attemptBoth'
-        }
-      );
+    const code=jsQR(
+      imageData.data,
+      imageData.width,
+      imageData.height,
+      {
+        inversionAttempts:'attemptBoth'
+      }
+    );
 
     if(code&&code.data){
 
-      handleQRCode(
-        code.data
-      );
-
+      handleQRCode(code.data);
       return;
     }
   }
 
-  scanAnimation=
-    requestAnimationFrame(
-      scanQRCode
-    );
+  scanAnimation=requestAnimationFrame(scanQRCode);
 }
 
 async function toggleFlash(){
 
   if(!videoTrack){
 
-    setStatus(
-      '⚠️ Camera chưa sẵn sàng.',
-      'error'
-    );
+    setStatus('⚠️ Camera chưa sẵn sàng.','error');
 
     return;
   }
 
-  const button=
-    document.getElementById(
-      'flashButton'
-    );
-
+  const button=document.getElementById('flashButton');
   const newState=!flashOn;
 
   try{
@@ -504,46 +237,28 @@ async function toggleFlash(){
 
     if(flashOn){
 
-      button.textContent=
-        '🔦 TẮT ĐÈN';
+      button.textContent='🔦 TẮT FLASH';
+      button.classList.add('active');
 
-      button.classList.add(
-        'active'
-      );
-
-      setStatus(
-        '💡 Đèn flash đang bật.',
-        'info'
-      );
+      setStatus('💡 FLASH đang bật.','info');
 
     }else{
 
-      button.textContent=
-        '🔦 BẬT ĐÈN';
+      button.textContent='🔦 BẬT FLASH';
+      button.classList.remove('active');
 
-      button.classList.remove(
-        'active'
-      );
-
-      setStatus(
-        'Đưa QR vào khung camera.',
-        'info'
-      );
+      setStatus('Đưa QR vào khung camera.','info');
     }
 
   }catch(error){
 
     flashOn=false;
 
-    button.textContent=
-      '🔦 BẬT ĐÈN';
-
-    button.classList.remove(
-      'active'
-    );
+    button.textContent='🔦 BẬT FLASH';
+    button.classList.remove('active');
 
     setStatus(
-      '⚠️ Thiết bị không cho phép điều khiển đèn flash từ trình duyệt.',
+      '⚠️ iPhone không cho phép web điều khiển FLASH. Hãy thử Safari và kiểm tra quyền Camera.',
       'error'
     );
 
@@ -553,12 +268,7 @@ async function toggleFlash(){
 
 async function turnOffFlash(){
 
-  if(
-    !videoTrack||
-    !flashOn
-  ){
-    return;
-  }
+  if(!videoTrack)return;
 
   try{
 
@@ -574,27 +284,17 @@ async function turnOffFlash(){
 
   flashOn=false;
 
-  const button=
-    document.getElementById(
-      'flashButton'
-    );
+  const button=document.getElementById('flashButton');
 
-  button.textContent=
-    '🔦 BẬT ĐÈN';
-
-  button.classList.remove(
-    'active'
-  );
+  button.textContent='🔦 BẬT FLASH';
+  button.classList.remove('active');
 }
 
 async function stopCamera(){
 
   if(scanAnimation){
 
-    cancelAnimationFrame(
-      scanAnimation
-    );
-
+    cancelAnimationFrame(scanAnimation);
     scanAnimation=null;
   }
 
@@ -602,112 +302,63 @@ async function stopCamera(){
 
   if(cameraStream){
 
-    cameraStream
-      .getTracks()
-      .forEach(function(track){
-        track.stop();
-      });
+    cameraStream.getTracks().forEach(function(track){
+      track.stop();
+    });
   }
 
   cameraStream=null;
   videoTrack=null;
   video.srcObject=null;
-
   cameraRunning=false;
 
-  document.getElementById(
-    'cameraBox'
-  ).style.display='none';
+  document.getElementById('cameraBox').style.display='none';
 
-  document.getElementById(
-    'flashButton'
-  ).style.display='none';
+  document.getElementById('flashButton').style.display='none';
 
-  document.getElementById(
-    'scanButton'
-  ).disabled=false;
+  document.getElementById('scanButton').disabled=false;
 }
 
 async function handleQRCode(decodedText){
 
-  if(!cameraRunning){
-    return;
-  }
+  if(!cameraRunning)return;
 
   await stopCamera();
 
-  processQRCode(
-    decodedText
-  );
+  processQRCode(decodedText);
 }
 
 function processQRCode(text){
 
-  const parts=
-    text
-      .split('|')
-      .map(function(item){
-        return item.trim();
-      });
+  const parts=text.split('|').map(function(item){
+    return item.trim();
+  });
 
-  const maSanPham=
-    parts[0]||'';
-
-  const tenSanPham=
-    parts[1]||'';
-
-  const loSanPham=
-    parts[2]||'';
-
-  const donViThung=
-    parts[3]||'';
+  const maSanPham=parts[0]||'';
+  const tenSanPham=parts[1]||'';
+  const loSanPham=parts[2]||'';
+  const donViThung=parts[3]||'';
 
   if(!maSanPham){
 
-    setStatus(
-      '❌ QR thiếu mã sản phẩm.',
-      'error'
-    );
+    setStatus('❌ QR thiếu mã sản phẩm.','error');
 
     return;
   }
 
-  document.getElementById(
-    'maSanPham'
-  ).value=maSanPham;
+  document.getElementById('maSanPham').value=maSanPham;
+  document.getElementById('tenSanPham').value=tenSanPham;
+  document.getElementById('loSanPham').value=loSanPham;
+  document.getElementById('donViThung').value=donViThung;
 
-  document.getElementById(
-    'tenSanPham'
-  ).value=tenSanPham;
+  setStatus('✅ Đã quét QR thành công.','success');
 
-  document.getElementById(
-    'loSanPham'
-  ).value=loSanPham;
-
-  document.getElementById(
-    'donViThung'
-  ).value=donViThung;
-
-  setStatus(
-    '✅ Đã quét QR thành công.',
-    'success'
-  );
-
-  document.getElementById(
-    'soLuongXuat'
-  ).focus();
+  document.getElementById('soLuongXuat').focus();
 }
 
-function appendHidden(
-  form,
-  name,
-  value
-){
+function appendHidden(form,name,value){
 
-  const input=
-    document.createElement(
-      'input'
-    );
+  const input=document.createElement('input');
 
   input.type='hidden';
   input.name=name;
@@ -718,176 +369,83 @@ function appendHidden(
 
 function clearManualFields(){
 
-  document.getElementById(
-    'soLuongXuat'
-  ).value='';
-
-  document.getElementById(
-    'nguoiYeuCau'
-  ).value='';
-
-  document.getElementById(
-    'boPhan'
-  ).value='';
-
-  document.getElementById(
-    'ghiChu'
-  ).value='';
+  document.getElementById('soLuongXuat').value='';
+  document.getElementById('nguoiYeuCau').value='';
+  document.getElementById('boPhan').value='';
+  document.getElementById('ghiChu').value='';
 }
 
 function submitData(){
 
-  if(isSubmitting){
-    return;
-  }
+  if(isSubmitting)return;
 
-  const maSanPham=
-    document.getElementById(
-      'maSanPham'
-    ).value.trim();
-
-  const tenSanPham=
-    document.getElementById(
-      'tenSanPham'
-    ).value.trim();
-
-  const loSanPham=
-    document.getElementById(
-      'loSanPham'
-    ).value.trim();
-
-  const donViThung=
-    document.getElementById(
-      'donViThung'
-    ).value.trim();
-
-  const soLuongXuat=
-    document.getElementById(
-      'soLuongXuat'
-    ).value.trim();
-
-  const nguoiYeuCau=
-    document.getElementById(
-      'nguoiYeuCau'
-    ).value.trim();
-
-  const boPhan=
-    document.getElementById(
-      'boPhan'
-    ).value.trim();
-
-  const ghiChu=
-    document.getElementById(
-      'ghiChu'
-    ).value.trim();
+  const maSanPham=document.getElementById('maSanPham').value.trim();
+  const tenSanPham=document.getElementById('tenSanPham').value.trim();
+  const loSanPham=document.getElementById('loSanPham').value.trim();
+  const donViThung=document.getElementById('donViThung').value.trim();
+  const soLuongXuat=document.getElementById('soLuongXuat').value.trim();
+  const nguoiYeuCau=document.getElementById('nguoiYeuCau').value.trim();
+  const boPhan=document.getElementById('boPhan').value.trim();
+  const ghiChu=document.getElementById('ghiChu').value.trim();
 
   if(!maSanPham){
-
-    setStatus(
-      '❌ Hãy quét QR trước.',
-      'error'
-    );
-
+    setStatus('❌ Hãy quét QR trước.','error');
     return;
   }
 
   if(!soLuongXuat){
-
-    setStatus(
-      '❌ Vui lòng nhập số lượng xuất.',
-      'error'
-    );
-
+    setStatus('❌ Vui lòng nhập số lượng xuất.','error');
     return;
   }
 
-  const quantity=
-    Number(soLuongXuat);
+  const quantity=Number(soLuongXuat);
 
-  if(
-    !Number.isFinite(quantity)||
-    quantity<=0
-  ){
-
-    setStatus(
-      '❌ Số lượng xuất phải lớn hơn 0.',
-      'error'
-    );
-
+  if(!Number.isFinite(quantity)||quantity<=0){
+    setStatus('❌ Số lượng xuất phải lớn hơn 0.','error');
     return;
   }
 
   if(!nguoiYeuCau){
-
-    setStatus(
-      '❌ Vui lòng nhập người yêu cầu.',
-      'error'
-    );
-
+    setStatus('❌ Vui lòng nhập người yêu cầu.','error');
     return;
   }
 
   if(!boPhan){
-
-    setStatus(
-      '❌ Vui lòng nhập bộ phận.',
-      'error'
-    );
-
+    setStatus('❌ Vui lòng nhập bộ phận.','error');
     return;
   }
 
-  const button=
-    document.getElementById(
-      'submitButton'
-    );
+  const button=document.getElementById('submitButton');
 
-  if(button.disabled){
-    return;
-  }
+  if(button.disabled)return;
 
   isSubmitting=true;
-
   button.disabled=true;
 
-  setStatus(
-    '⏳ Đang lưu dữ liệu...',
-    'info'
-  );
+  setStatus('⏳ Đang lưu dữ liệu...','info');
 
   const token=
     Date.now().toString()+
-    '_' +
-    Math.random()
-      .toString(36)
-      .substring(2);
+    '_'+
+    Math.random().toString(36).substring(2);
 
-  const frame=
-    document.getElementById(
-      'submitFrame'
-    );
+  const frame=document.getElementById('submitFrame');
 
   let completed=false;
 
   frame.onload=function(){
 
-    if(completed){
-      return;
-    }
+    if(completed)return;
 
     completed=true;
 
     if(submitTimer){
 
-      clearTimeout(
-        submitTimer
-      );
-
+      clearTimeout(submitTimer);
       submitTimer=null;
     }
 
     isSubmitting=false;
-
     button.disabled=false;
 
     setStatus(
@@ -898,146 +456,60 @@ function submitData(){
     clearManualFields();
   };
 
-  const form=
-    document.createElement(
-      'form'
-    );
+  const form=document.createElement('form');
 
   form.method='POST';
-
   form.action=API_URL;
-
   form.target='submitFrame';
-
   form.style.display='none';
 
-  appendHidden(
-    form,
-    'maSanPham',
-    maSanPham
-  );
+  appendHidden(form,'maSanPham',maSanPham);
+  appendHidden(form,'tenSanPham',tenSanPham);
+  appendHidden(form,'loSanPham',loSanPham);
+  appendHidden(form,'donViThung',donViThung);
+  appendHidden(form,'soLuongXuat',soLuongXuat);
+  appendHidden(form,'nguoiYeuCau',nguoiYeuCau);
+  appendHidden(form,'boPhan',boPhan);
+  appendHidden(form,'ghiChu',ghiChu);
+  appendHidden(form,'clientToken',token);
 
-  appendHidden(
-    form,
-    'tenSanPham',
-    tenSanPham
-  );
-
-  appendHidden(
-    form,
-    'loSanPham',
-    loSanPham
-  );
-
-  appendHidden(
-    form,
-    'donViThung',
-    donViThung
-  );
-
-  appendHidden(
-    form,
-    'soLuongXuat',
-    soLuongXuat
-  );
-
-  appendHidden(
-    form,
-    'nguoiYeuCau',
-    nguoiYeuCau
-  );
-
-  appendHidden(
-    form,
-    'boPhan',
-    boPhan
-  );
-
-  appendHidden(
-    form,
-    'ghiChu',
-    ghiChu
-  );
-
-  appendHidden(
-    form,
-    'clientToken',
-    token
-  );
-
-  document.body.appendChild(
-    form
-  );
+  document.body.appendChild(form);
 
   form.submit();
 
-  document.body.removeChild(
-    form
-  );
+  document.body.removeChild(form);
 
-  submitTimer=
-    setTimeout(function(){
+  submitTimer=setTimeout(function(){
 
-      if(completed){
-        return;
-      }
+    if(completed)return;
 
-      completed=true;
+    completed=true;
 
-      isSubmitting=false;
+    isSubmitting=false;
+    button.disabled=false;
 
-      button.disabled=false;
+    setStatus(
+      '⚠️ Đã gửi dữ liệu. Hãy kiểm tra Dữ liệu QR.',
+      'success'
+    );
 
-      setStatus(
-        '⚠️ Đã gửi dữ liệu. Hãy kiểm tra Dữ liệu QR.',
-        'success'
-      );
+    clearManualFields();
 
-      clearManualFields();
-
-    },5000);
+  },5000);
 }
 
 function nextOrder(){
 
-  if(
-    cameraRunning||
-    isSubmitting
-  ){
-    return;
-  }
+  if(cameraRunning||isSubmitting)return;
 
-  document.getElementById(
-    'maSanPham'
-  ).value='';
-
-  document.getElementById(
-    'tenSanPham'
-  ).value='';
-
-  document.getElementById(
-    'loSanPham'
-  ).value='';
-
-  document.getElementById(
-    'donViThung'
-  ).value='';
-
-  document.getElementById(
-    'soLuongXuat'
-  ).value='';
-
-  document.getElementById(
-    'nguoiYeuCau'
-  ).value='';
-
-  document.getElementById(
-    'boPhan'
-  ).value='';
-
-  document.getElementById(
-    'ghiChu'
-  ).value='';
+  document.getElementById('maSanPham').value='';
+  document.getElementById('tenSanPham').value='';
+  document.getElementById('loSanPham').value='';
+  document.getElementById('donViThung').value='';
+  document.getElementById('soLuongXuat').value='';
+  document.getElementById('nguoiYeuCau').value='';
+  document.getElementById('boPhan').value='';
+  document.getElementById('ghiChu').value='';
 
   setStatus(
     'Sẵn sàng quét lệnh tiếp theo.',
@@ -1053,11 +525,9 @@ window.addEventListener(
 
     if(cameraStream){
 
-      cameraStream
-        .getTracks()
-        .forEach(function(track){
-          track.stop();
-        });
+      cameraStream.getTracks().forEach(function(track){
+        track.stop();
+      });
     }
   }
 );
