@@ -2,9 +2,10 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>QUÉT QR KHO VẬT TƯ</title>
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
 <style>
 *{
@@ -31,7 +32,7 @@ h1{
 }
 
 .card{
-  background:white;
+  background:#fff;
   border-radius:16px;
   padding:20px;
   margin-bottom:16px;
@@ -52,7 +53,7 @@ textarea{
   border:1px solid #d1d5db;
   border-radius:9px;
   font-size:16px;
-  background:white
+  background:#fff
 }
 
 input[readonly]{
@@ -81,12 +82,12 @@ button:disabled{
 
 #scanButton{
   background:#111827;
-  color:white
+  color:#fff
 }
 
 #flashButton{
   background:#f59e0b;
-  color:white;
+  color:#fff;
   display:none
 }
 
@@ -96,19 +97,45 @@ button:disabled{
 
 #submitButton{
   background:#2563eb;
-  color:white
+  color:#fff
 }
 
 #nextButton{
   background:#16a34a;
-  color:white
+  color:#fff
 }
 
-#reader{
+#cameraBox{
+  display:none;
   width:100%;
   margin-top:15px;
+  position:relative;
   overflow:hidden;
-  border-radius:10px
+  border-radius:12px;
+  background:#000;
+  aspect-ratio:1/1
+}
+
+#video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block
+}
+
+#scanFrame{
+  position:absolute;
+  width:62%;
+  height:62%;
+  left:19%;
+  top:19%;
+  border:3px solid #22c55e;
+  border-radius:16px;
+  pointer-events:none
+}
+
+#canvas{
+  display:none
 }
 
 #status{
@@ -149,16 +176,29 @@ button:disabled{
 
 <button
   id="scanButton"
-  onclick="startScanner()">
+  onclick="startCamera()">
   📷 QUÉT QR
 </button>
 
-<div id="reader"></div>
+<div id="cameraBox">
+
+<video
+  id="video"
+  autoplay
+  muted
+  playsinline>
+</video>
+
+<div id="scanFrame"></div>
+
+</div>
+
+<canvas id="canvas"></canvas>
 
 <button
   id="flashButton"
   onclick="toggleFlash()">
-  🔦 BẬT FLASH
+  🔦 BẬT ĐÈN
 </button>
 
 <div
@@ -244,12 +284,27 @@ button:disabled{
 const API_URL=
 'https://script.google.com/macros/s/AKfycby6at1PD83x1knfyIV9UYFd8-5uZMx8LrqLVrni1P2ot_RT6C4xku44fNeor83twkyy/exec';
 
-let scanner=null;
-let isScanning=false;
-let isSubmitting=false;
-let flashTrack=null;
+let cameraStream=null;
+let videoTrack=null;
+let cameraRunning=false;
 let flashOn=false;
+let scanAnimation=null;
+let isSubmitting=false;
 let submitTimer=null;
+
+const video=
+  document.getElementById('video');
+
+const canvas=
+  document.getElementById('canvas');
+
+const context=
+  canvas.getContext(
+    '2d',
+    {
+      willReadFrequently:true
+    }
+  );
 
 function setStatus(message,type){
 
@@ -260,203 +315,211 @@ function setStatus(message,type){
   status.className=type||'info';
 }
 
-function startScanner(){
+async function startCamera(){
 
-  if(isScanning||isSubmitting){
+  if(cameraRunning||isSubmitting){
     return;
   }
 
-  const reader=
-    document.getElementById('reader');
+  if(
+    !navigator.mediaDevices||
+    !navigator.mediaDevices.getUserMedia
+  ){
 
-  reader.innerHTML='';
+    setStatus(
+      '❌ Trình duyệt không hỗ trợ camera.',
+      'error'
+    );
 
-  setStatus(
-    'Đang mở camera...',
-    'info'
-  );
+    return;
+  }
 
-  scanner=
-    new Html5Qrcode('reader');
+  try{
 
-  scanner.start(
-    {
-      facingMode:'environment'
-    },
-    {
-      fps:10,
-      qrbox:{
-        width:250,
-        height:250
-      }
-    },
-    function(decodedText){
-      handleQRCode(decodedText);
-    },
-    function(){}
-  )
-  .then(function(){
+    setStatus(
+      '⏳ Đang mở camera...',
+      'info'
+    );
 
-    isScanning=true;
+    cameraStream=
+      await navigator.mediaDevices.getUserMedia({
+        video:{
+          facingMode:{
+            ideal:'environment'
+          },
+          width:{
+            ideal:1280
+          },
+          height:{
+            ideal:1280
+          }
+        },
+        audio:false
+      });
+
+    video.srcObject=cameraStream;
+
+    await video.play();
+
+    videoTrack=
+      cameraStream.getVideoTracks()[0];
+
+    cameraRunning=true;
+    flashOn=false;
+
+    document.getElementById(
+      'cameraBox'
+    ).style.display='block';
+
+    document.getElementById(
+      'flashButton'
+    ).style.display='block';
+
+    document.getElementById(
+      'scanButton'
+    ).disabled=true;
+
+    document.getElementById(
+      'flashButton'
+    ).textContent='🔦 BẬT ĐÈN';
+
+    document.getElementById(
+      'flashButton'
+    ).classList.remove('active');
 
     setStatus(
       'Đưa QR vào khung camera.',
       'info'
     );
 
-    setupFlash();
+    scanQRCode();
 
-  })
-  .catch(function(error){
+  }catch(error){
 
-    isScanning=false;
+    cameraRunning=false;
 
-    hideFlashButton();
+    cameraStream=null;
+    videoTrack=null;
 
     setStatus(
-      '❌ Không thể mở camera. Hãy kiểm tra quyền Camera.',
+      '❌ Không thể mở camera. Hãy cấp quyền Camera cho trình duyệt.',
       'error'
     );
 
     console.error(error);
-
-  });
-}
-
-function setupFlash(){
-
-  flashTrack=null;
-  flashOn=false;
-
-  const button=
-    document.getElementById(
-      'flashButton'
-    );
-
-  button.classList.remove('active');
-  button.textContent='🔦 BẬT FLASH';
-
-  try{
-
-    const videoElement=
-      document.querySelector(
-        '#reader video'
-      );
-
-    if(!videoElement){
-      hideFlashButton();
-      return;
-    }
-
-    const stream=
-      videoElement.srcObject;
-
-    if(!stream){
-      hideFlashButton();
-      return;
-    }
-
-    const tracks=
-      stream.getVideoTracks();
-
-    if(!tracks||!tracks.length){
-      hideFlashButton();
-      return;
-    }
-
-    const track=tracks[0];
-
-    const capabilities=
-      track.getCapabilities
-        ? track.getCapabilities()
-        : {};
-
-    if(!capabilities.torch){
-
-      hideFlashButton();
-      return;
-    }
-
-    flashTrack=track;
-
-    button.style.display='block';
-
-  }catch(error){
-
-    hideFlashButton();
-
   }
 }
 
-function hideFlashButton(){
+function scanQRCode(){
 
-  const button=
-    document.getElementById(
-      'flashButton'
+  if(!cameraRunning){
+    return;
+  }
+
+  if(
+    video.readyState>=2&&
+    video.videoWidth>0&&
+    video.videoHeight>0
+  ){
+
+    canvas.width=
+      video.videoWidth;
+
+    canvas.height=
+      video.videoHeight;
+
+    context.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
     );
 
-  button.style.display='none';
+    const imageData=
+      context.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
 
-  flashTrack=null;
-  flashOn=false;
+    const code=
+      jsQR(
+        imageData.data,
+        imageData.width,
+        imageData.height,
+        {
+          inversionAttempts:
+            'attemptBoth'
+        }
+      );
 
-  button.classList.remove('active');
-  button.textContent='🔦 BẬT FLASH';
-}
+    if(code&&code.data){
 
-function toggleFlash(){
-
-  if(!flashTrack){
-
-    setupFlash();
-
-    if(!flashTrack){
-
-      setStatus(
-        '⚠️ Điện thoại hoặc trình duyệt không hỗ trợ bật Flash.',
-        'error'
+      handleQRCode(
+        code.data
       );
 
       return;
     }
   }
+
+  scanAnimation=
+    requestAnimationFrame(
+      scanQRCode
+    );
+}
+
+async function toggleFlash(){
+
+  if(!videoTrack){
+
+    setStatus(
+      '⚠️ Camera chưa sẵn sàng.',
+      'error'
+    );
+
+    return;
+  }
+
+  const button=
+    document.getElementById(
+      'flashButton'
+    );
 
   const newState=!flashOn;
 
-  flashTrack.applyConstraints({
-    advanced:[
-      {
-        torch:newState
-      }
-    ]
-  })
-  .then(function(){
+  try{
+
+    await videoTrack.applyConstraints({
+      advanced:[
+        {
+          torch:newState
+        }
+      ]
+    });
 
     flashOn=newState;
-
-    const button=
-      document.getElementById(
-        'flashButton'
-      );
 
     if(flashOn){
 
       button.textContent=
-        '🔦 TẮT FLASH';
+        '🔦 TẮT ĐÈN';
 
       button.classList.add(
         'active'
       );
 
       setStatus(
-        '💡 Flash đang bật.',
+        '💡 Đèn flash đang bật.',
         'info'
       );
 
     }else{
 
       button.textContent=
-        '🔦 BẬT FLASH';
+        '🔦 BẬT ĐÈN';
 
       button.classList.remove(
         'active'
@@ -466,40 +529,48 @@ function toggleFlash(){
         'Đưa QR vào khung camera.',
         'info'
       );
-
     }
 
-  })
-  .catch(function(error){
+  }catch(error){
+
+    flashOn=false;
+
+    button.textContent=
+      '🔦 BẬT ĐÈN';
+
+    button.classList.remove(
+      'active'
+    );
 
     setStatus(
-      '⚠️ Không thể điều khiển Flash trên thiết bị này.',
+      '⚠️ Thiết bị không cho phép điều khiển đèn flash từ trình duyệt.',
       'error'
     );
 
     console.error(error);
-
-  });
+  }
 }
 
-function turnOffFlash(){
+async function turnOffFlash(){
 
-  if(!flashTrack){
+  if(
+    !videoTrack||
+    !flashOn
+  ){
     return;
   }
 
-  if(!flashOn){
-    return;
-  }
+  try{
 
-  flashTrack.applyConstraints({
-    advanced:[
-      {
-        torch:false
-      }
-    ]
-  })
-  .catch(function(){});
+    await videoTrack.applyConstraints({
+      advanced:[
+        {
+          torch:false
+        }
+      ]
+    });
+
+  }catch(error){}
 
   flashOn=false;
 
@@ -509,54 +580,65 @@ function turnOffFlash(){
     );
 
   button.textContent=
-    '🔦 BẬT FLASH';
+    '🔦 BẬT ĐÈN';
 
   button.classList.remove(
     'active'
   );
 }
 
-function stopScanner(){
+async function stopCamera(){
 
-  turnOffFlash();
+  if(scanAnimation){
 
-  hideFlashButton();
+    cancelAnimationFrame(
+      scanAnimation
+    );
 
-  if(!scanner){
-    isScanning=false;
-    return Promise.resolve();
+    scanAnimation=null;
   }
 
-  return scanner.stop()
-    .then(function(){
+  await turnOffFlash();
 
-      isScanning=false;
+  if(cameraStream){
 
-      scanner.clear();
+    cameraStream
+      .getTracks()
+      .forEach(function(track){
+        track.stop();
+      });
+  }
 
-      scanner=null;
+  cameraStream=null;
+  videoTrack=null;
+  video.srcObject=null;
 
-    })
-    .catch(function(){
+  cameraRunning=false;
 
-      isScanning=false;
-      scanner=null;
+  document.getElementById(
+    'cameraBox'
+  ).style.display='none';
 
-    });
+  document.getElementById(
+    'flashButton'
+  ).style.display='none';
+
+  document.getElementById(
+    'scanButton'
+  ).disabled=false;
 }
 
-function handleQRCode(decodedText){
+async function handleQRCode(decodedText){
 
-  if(!scanner){
+  if(!cameraRunning){
     return;
   }
 
-  stopScanner()
-    .then(function(){
+  await stopCamera();
 
-      processQRCode(decodedText);
-
-    });
+  processQRCode(
+    decodedText
+  );
 }
 
 function processQRCode(text){
@@ -623,15 +705,34 @@ function appendHidden(
 ){
 
   const input=
-    document.createElement('input');
+    document.createElement(
+      'input'
+    );
 
   input.type='hidden';
-
   input.name=name;
-
   input.value=value;
 
   form.appendChild(input);
+}
+
+function clearManualFields(){
+
+  document.getElementById(
+    'soLuongXuat'
+  ).value='';
+
+  document.getElementById(
+    'nguoiYeuCau'
+  ).value='';
+
+  document.getElementById(
+    'boPhan'
+  ).value='';
+
+  document.getElementById(
+    'ghiChu'
+  ).value='';
 }
 
 function submitData(){
@@ -798,7 +899,9 @@ function submitData(){
   };
 
   const form=
-    document.createElement('form');
+    document.createElement(
+      'form'
+    );
 
   form.method='POST';
 
@@ -862,11 +965,15 @@ function submitData(){
     token
   );
 
-  document.body.appendChild(form);
+  document.body.appendChild(
+    form
+  );
 
   form.submit();
 
-  document.body.removeChild(form);
+  document.body.removeChild(
+    form
+  );
 
   submitTimer=
     setTimeout(function(){
@@ -891,28 +998,12 @@ function submitData(){
     },5000);
 }
 
-function clearManualFields(){
-
-  document.getElementById(
-    'soLuongXuat'
-  ).value='';
-
-  document.getElementById(
-    'nguoiYeuCau'
-  ).value='';
-
-  document.getElementById(
-    'boPhan'
-  ).value='';
-
-  document.getElementById(
-    'ghiChu'
-  ).value='';
-}
-
 function nextOrder(){
 
-  if(isScanning||isSubmitting){
+  if(
+    cameraRunning||
+    isSubmitting
+  ){
     return;
   }
 
@@ -953,8 +1044,23 @@ function nextOrder(){
     'info'
   );
 
-  startScanner();
+  startCamera();
 }
+
+window.addEventListener(
+  'beforeunload',
+  function(){
+
+    if(cameraStream){
+
+      cameraStream
+        .getTracks()
+        .forEach(function(track){
+          track.stop();
+        });
+    }
+  }
+);
 
 </script>
 
