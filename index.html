@@ -1,378 +1,257 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
-
-  <title>Nhập vật tư QR</title>
-
-
-  <!-- ================================================= -->
-  <!-- THƯ VIỆN QUÉT QR -->
-  <!-- ================================================= -->
-
-  <script
-    src="https://unpkg.com/html5-qrcode"
-    type="text/javascript">
-  </script>
-
-
-  <!-- ================================================= -->
-  <!-- GIAO DIỆN -->
-  <!-- ================================================= -->
-
-  <style>
-
-    * {
-      box-sizing: border-box;
-    }
-
-
-    body {
-
-      margin: 0;
-
-      padding: 20px;
-
-      background: #f3f4f6;
-
-      font-family:
-        Arial,
-        sans-serif;
-
-    }
-
-
-    .container {
-
-      width: 100%;
-
-      max-width: 480px;
-
-      margin: auto;
-
-    }
-
-
-    h1 {
-
-      text-align: center;
-
-      font-size: 24px;
-
-      margin-bottom: 20px;
-
-    }
-
-
-    .card {
-
-      background: white;
-
-      border-radius: 16px;
-
-      padding: 20px;
-
-      margin-bottom: 16px;
-
-      box-shadow:
-        0 2px 8px
-        rgba(0, 0, 0, 0.08);
-
-    }
-
-
-    label {
-
-      display: block;
-
-      font-weight: bold;
-
-      margin-top: 14px;
-
-      margin-bottom: 6px;
-
-    }
-
-
-    input,
-    textarea {
-
-      width: 100%;
-
-      padding: 13px;
-
-      border:
-        1px solid #d1d5db;
-
-      border-radius: 9px;
-
-      font-size: 16px;
-
-      background: white;
-
-    }
-
-
-    input[readonly] {
-
-      background: #f1f5f9;
-
-    }
-
-
-    textarea {
-
-      resize: vertical;
-
-    }
-
-
-    button {
-
-      width: 100%;
-
-      border: none;
-
-      border-radius: 10px;
-
-      padding: 14px;
-
-      margin-top: 15px;
-
-      font-size: 17px;
-
-      font-weight: bold;
-
-      cursor: pointer;
-
-    }
-
-
-    #scanButton {
-
-      background: #111827;
-
-      color: white;
-
-    }
-
-
-    #submitButton {
-
-      background: #2563eb;
-
-      color: white;
-
-    }
-
-
-    #submitButton:disabled {
-
-      opacity: 0.6;
-
-      cursor: not-allowed;
-
-    }
-
-
-    #reader {
-
-      width: 100%;
-
-      margin-top: 15px;
-
-      overflow: hidden;
-
-      border-radius: 10px;
-
-    }
-
-
-    #status {
-
-      text-align: center;
-
-      margin-top: 15px;
-
-      font-weight: bold;
-
-      min-height: 24px;
-
-    }
-
-
-    .success {
-
-      color: #15803d;
-
-    }
-
-
-    .error {
-
-      color: #dc2626;
-
-    }
-
-
-    .info {
-
-      color: #374151;
-
-    }
-
-  </style>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XUẤT SẢN PHẨM QR</title>
+
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: #f3f4f6;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 480px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  font-size: 16px;
+  background: white;
+}
+
+input[readonly] {
+  background: #f1f5f9;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#scanButton {
+  background: #111827;
+  color: white;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.buttonRow button {
+  flex: 1;
+  margin-top: 0;
+}
+
+#submitButton {
+  background: #2563eb;
+  color: white;
+}
+
+#nextButton {
+  background: #16a34a;
+  color: white;
+}
+
+#submitButton:disabled,
+#nextButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#reader {
+  width: 100%;
+  margin-top: 15px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+#status {
+  text-align: center;
+  margin-top: 15px;
+  font-weight: bold;
+  min-height: 24px;
+}
+
+.success {
+  color: #15803d;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.info {
+  color: #374151;
+}
+
+.hiddenFrame {
+  display: none;
+  width: 0;
+  height: 0;
+  border: 0;
+}
+</style>
 </head>
-
 
 <body>
 
-
 <div class="container">
 
-
-  <!-- ================================================= -->
-  <!-- TIÊU ĐỀ -->
-  <!-- ================================================= -->
-
-  <h1>
-    NHẬP VẬT TƯ QR
-  </h1>
-
-
-  <!-- ================================================= -->
-  <!-- QUÉT QR -->
-  <!-- ================================================= -->
+  <h1>XUẤT SẢN PHẨM QR</h1>
 
   <div class="card">
-
 
     <button
       id="scanButton"
       onclick="startScanner()">
-
       📷 QUÉT QR
-
     </button>
 
-
     <div id="reader"></div>
-
 
     <div
       id="status"
       class="info">
     </div>
 
-
   </div>
-
-
-  <!-- ================================================= -->
-  <!-- NHẬP DỮ LIỆU -->
-  <!-- ================================================= -->
 
   <div class="card">
 
-
-    <label>
-      Mã vật tư
-    </label>
-
+    <label>Mã sản phẩm</label>
 
     <input
-      id="maVatTu"
+      id="maSanPham"
       type="text"
       readonly>
 
-
-    <label>
-      Đơn vị cung cấp
-    </label>
-
+    <label>Tên sản phẩm</label>
 
     <input
-      id="nhaCungCap"
+      id="tenSanPham"
       type="text"
       readonly>
 
-
-    <label>
-      Số lượng
-    </label>
-
+    <label>Lô sản phẩm</label>
 
     <input
-      id="soLuong"
+      id="loSanPham"
+      type="text"
+      readonly>
+
+    <label>Đơn vị thùng</label>
+
+    <input
+      id="donViThung"
+      type="text"
+      readonly>
+
+    <label>Số lượng xuất</label>
+
+    <input
+      id="soLuongXuat"
       type="number"
       min="1"
       inputmode="numeric">
 
-
-    <label>
-      Người nhập
-    </label>
-
+    <label>Người yêu cầu</label>
 
     <input
-      id="nguoiNhap"
+      id="nguoiYeuCau"
       type="text"
       autocomplete="name">
 
+    <label>Bộ phận</label>
 
-    <label>
-      Ghi chú
-    </label>
+    <input
+      id="boPhan"
+      type="text">
 
+    <label>Ghi chú</label>
 
     <textarea
       id="ghiChu"
-      rows="3">
-    </textarea>
+      rows="3"></textarea>
 
+    <div class="buttonRow">
 
-    <button
-      id="submitButton"
-      onclick="submitData()">
+      <button
+        id="submitButton"
+        onclick="submitData()">
+        GỬI DỮ LIỆU
+      </button>
 
-      GỬI DỮ LIỆU
+      <button
+        id="nextButton"
+        onclick="scanNextOrder()">
+        QUÉT LỆNH TIẾP THEO
+      </button>
 
-    </button>
-
+    </div>
 
   </div>
 
-
 </div>
 
+<iframe
+  id="submitFrame"
+  name="submitFrame"
+  class="hiddenFrame">
+</iframe>
 
 <script>
 
-
-/**
- * =====================================================
- * URL GOOGLE APPS SCRIPT
- * =====================================================
- *
- * ANH CHỈ THAY URL Ở ĐÂY.
- */
-
 const API_URL =
   'https://script.google.com/macros/s/AKfycby6at1PD83x1knfyIV9UYFd8-5uZMx8LrqLVrni1P2ot_RT6C4xku44fNeor83twkyy/exec';
-
-
-/**
- * =====================================================
- * BIẾN
- * =====================================================
- */
 
 let scanner = null;
 
@@ -380,86 +259,55 @@ let isScanning = false;
 
 let waitingToken = null;
 
-let jsonpScript = null;
+let submitTimeout = null;
 
-
-/**
- * =====================================================
- * CAMERA
- * =====================================================
- */
 
 function startScanner() {
 
-
   if (isScanning) {
-
     return;
-
   }
 
+  const reader =
+    document.getElementById('reader');
 
-  document.getElementById(
-    'reader'
-  ).innerHTML = '';
-
+  reader.innerHTML = '';
 
   setStatus(
     'Đang mở camera...',
     'info'
   );
 
-
   scanner =
-    new Html5Qrcode(
-      'reader'
-    );
-
+    new Html5Qrcode('reader');
 
   scanner.start(
 
     {
-      facingMode:
-        'environment'
+      facingMode: 'environment'
     },
-
 
     {
       fps: 10,
 
       qrbox: {
-
         width: 250,
-
         height: 250
-
       }
-
     },
-
 
     function(decodedText) {
 
-      handleQRCode(
-        decodedText
-      );
+      handleQRCode(decodedText);
 
     },
 
-
-    function(errorMessage) {
-
-      // Không hiển thị lỗi liên tục.
-
-    }
+    function() {}
 
   )
-
-
   .then(function() {
 
     isScanning = true;
-
 
     setStatus(
       'Đưa QR vào khung camera.',
@@ -467,19 +315,14 @@ function startScanner() {
     );
 
   })
-
-
   .catch(function(error) {
 
     isScanning = false;
 
-
     setStatus(
-      '❌ Không thể mở camera. ' +
-      'Hãy kiểm tra quyền Camera.',
+      '❌ Không thể mở camera. Hãy kiểm tra quyền Camera.',
       'error'
     );
-
 
     console.error(error);
 
@@ -488,23 +331,11 @@ function startScanner() {
 }
 
 
-/**
- * =====================================================
- * QR ĐÃ ĐƯỢC QUÉT
- * =====================================================
- */
-
-function handleQRCode(
-  decodedText
-) {
-
+function handleQRCode(decodedText) {
 
   if (!scanner) {
-
     return;
-
   }
-
 
   scanner.stop()
 
@@ -512,9 +343,7 @@ function handleQRCode(
 
       isScanning = false;
 
-      processQRCode(
-        decodedText
-      );
+      processQRCode(decodedText);
 
     })
 
@@ -522,160 +351,124 @@ function handleQRCode(
 
       isScanning = false;
 
-      processQRCode(
-        decodedText
-      );
+      processQRCode(decodedText);
 
     });
 
 }
 
 
-/**
- * =====================================================
- * XỬ LÝ QR
- * =====================================================
- *
- * QR:
- *
- * VT00125|Công ty ABC
- *
- */
-
-function processQRCode(
-  text
-) {
-
+function processQRCode(text) {
 
   const parts =
-    text.split('|');
+    text
+      .split('|')
+      .map(function(item) {
+        return item.trim();
+      });
 
+  const maSanPham =
+    parts[0] || '';
 
-  if (
-    parts.length < 2
-  ) {
+  const tenSanPham =
+    parts[1] || '';
+
+  const loSanPham =
+    parts[2] || '';
+
+  const donViThung =
+    parts[3] || '';
+
+  if (!maSanPham) {
 
     setStatus(
-      '❌ QR không đúng định dạng.',
+      '❌ QR thiếu mã sản phẩm.',
       'error'
     );
 
     return;
-
   }
 
-
-  const maVatTu =
-    parts[0].trim();
-
-
-  const nhaCungCap =
-    parts
-      .slice(1)
-      .join('|')
-      .trim();
-
-
-  if (
-    !maVatTu ||
-    !nhaCungCap
-  ) {
-
-    setStatus(
-      '❌ QR thiếu thông tin.',
-      'error'
-    );
-
-    return;
-
-  }
-
+  document.getElementById(
+    'maSanPham'
+  ).value = maSanPham;
 
   document.getElementById(
-    'maVatTu'
-  ).value =
-    maVatTu;
-
+    'tenSanPham'
+  ).value = tenSanPham;
 
   document.getElementById(
-    'nhaCungCap'
-  ).value =
-    nhaCungCap;
+    'loSanPham'
+  ).value = loSanPham;
 
+  document.getElementById(
+    'donViThung'
+  ).value = donViThung;
 
   setStatus(
     '✅ Đã quét QR thành công.',
     'success'
   );
 
-
   document.getElementById(
-    'soLuong'
+    'soLuongXuat'
   ).focus();
 
 }
 
 
-/**
- * =====================================================
- * GỬI DỮ LIỆU
- * =====================================================
- *
- * Dùng JSONP.
- *
- * Không dùng:
- * - fetch
- * - CORS
- * - iframe
- * - postMessage
- *
- */
-
 function submitData() {
 
+  const maSanPham =
+    document
+      .getElementById('maSanPham')
+      .value
+      .trim();
 
-  // ---------------------------------------------------
-  // Lấy dữ liệu
-  // ---------------------------------------------------
+  const tenSanPham =
+    document
+      .getElementById('tenSanPham')
+      .value
+      .trim();
 
-  const maVatTu =
-    document.getElementById(
-      'maVatTu'
-    ).value.trim();
+  const loSanPham =
+    document
+      .getElementById('loSanPham')
+      .value
+      .trim();
 
+  const donViThung =
+    document
+      .getElementById('donViThung')
+      .value
+      .trim();
 
-  const nhaCungCap =
-    document.getElementById(
-      'nhaCungCap'
-    ).value.trim();
+  const soLuongXuat =
+    document
+      .getElementById('soLuongXuat')
+      .value
+      .trim();
 
+  const nguoiYeuCau =
+    document
+      .getElementById('nguoiYeuCau')
+      .value
+      .trim();
 
-  const soLuong =
-    document.getElementById(
-      'soLuong'
-    ).value.trim();
-
-
-  const nguoiNhap =
-    document.getElementById(
-      'nguoiNhap'
-    ).value.trim();
-
+  const boPhan =
+    document
+      .getElementById('boPhan')
+      .value
+      .trim();
 
   const ghiChu =
-    document.getElementById(
-      'ghiChu'
-    ).value.trim();
+    document
+      .getElementById('ghiChu')
+      .value
+      .trim();
 
 
-  // ---------------------------------------------------
-  // Kiểm tra QR
-  // ---------------------------------------------------
-
-  if (
-    !maVatTu ||
-    !nhaCungCap
-  ) {
+  if (!maSanPham) {
 
     setStatus(
       '❌ Hãy quét QR trước.',
@@ -683,59 +476,59 @@ function submitData() {
     );
 
     return;
-
   }
 
 
-  // ---------------------------------------------------
-  // Kiểm tra số lượng
-  // ---------------------------------------------------
-
-  if (!soLuong) {
+  if (!soLuongXuat) {
 
     setStatus(
-      '❌ Vui lòng nhập số lượng.',
+      '❌ Vui lòng nhập số lượng xuất.',
       'error'
     );
 
     return;
-
   }
+
+
+  const quantity =
+    Number(soLuongXuat);
 
 
   if (
-    Number(soLuong) <= 0
+    !Number.isFinite(quantity) ||
+    quantity <= 0
   ) {
 
     setStatus(
-      '❌ Số lượng phải lớn hơn 0.',
+      '❌ Số lượng xuất phải lớn hơn 0.',
       'error'
     );
 
     return;
-
   }
 
 
-  // ---------------------------------------------------
-  // Kiểm tra người nhập
-  // ---------------------------------------------------
-
-  if (!nguoiNhap) {
+  if (!nguoiYeuCau) {
 
     setStatus(
-      '❌ Vui lòng nhập người nhập.',
+      '❌ Vui lòng nhập người yêu cầu.',
       'error'
     );
 
     return;
-
   }
 
 
-  // ---------------------------------------------------
-  // Kiểm tra URL
-  // ---------------------------------------------------
+  if (!boPhan) {
+
+    setStatus(
+      '❌ Vui lòng nhập bộ phận.',
+      'error'
+    );
+
+    return;
+  }
+
 
   if (
     API_URL ===
@@ -748,13 +541,8 @@ function submitData() {
     );
 
     return;
-
   }
 
-
-  // ---------------------------------------------------
-  // Không cho gửi 2 lần
-  // ---------------------------------------------------
 
   const button =
     document.getElementById(
@@ -762,12 +550,8 @@ function submitData() {
     );
 
 
-  if (
-    button.disabled
-  ) {
-
+  if (button.disabled) {
     return;
-
   }
 
 
@@ -780,10 +564,6 @@ function submitData() {
   );
 
 
-  // ---------------------------------------------------
-  // Token
-  // ---------------------------------------------------
-
   const token =
     Date.now().toString() +
     '_' +
@@ -792,359 +572,312 @@ function submitData() {
       .substring(2);
 
 
-  waitingToken =
-    token;
+  waitingToken = token;
 
 
-  // ---------------------------------------------------
-  // Tạo tên callback
-  // ---------------------------------------------------
-
-  const callbackName =
-    'qrCallback_' +
-    Date.now() +
-    '_' +
-    Math.random()
-      .toString(36)
-      .substring(2);
+  const form =
+    document.createElement('form');
 
 
-  // ---------------------------------------------------
-  // Tạo callback
-  // ---------------------------------------------------
+  form.method = 'POST';
 
-  window[callbackName] =
-    function(result) {
+  form.action = API_URL;
 
-      handleSubmitResult(
-        result,
-        callbackName
-      );
+  form.target = 'submitFrame';
 
-    };
+  form.style.display = 'none';
 
 
-  // ---------------------------------------------------
-  // Tạo URL
-  // ---------------------------------------------------
+  appendHidden(
+    form,
+    'maSanPham',
+    maSanPham
+  );
 
-  const params =
-    new URLSearchParams({
+  appendHidden(
+    form,
+    'tenSanPham',
+    tenSanPham
+  );
 
-      action:
-        'save',
+  appendHidden(
+    form,
+    'loSanPham',
+    loSanPham
+  );
 
-      callback:
-        callbackName,
+  appendHidden(
+    form,
+    'donViThung',
+    donViThung
+  );
 
-      maVatTu:
-        maVatTu,
+  appendHidden(
+    form,
+    'soLuongXuat',
+    soLuongXuat
+  );
 
-      nhaCungCap:
-        nhaCungCap,
+  appendHidden(
+    form,
+    'nguoiYeuCau',
+    nguoiYeuCau
+  );
 
-      soLuong:
-        soLuong,
+  appendHidden(
+    form,
+    'boPhan',
+    boPhan
+  );
 
-      nguoiNhap:
-        nguoiNhap,
+  appendHidden(
+    form,
+    'ghiChu',
+    ghiChu
+  );
 
-      ghiChu:
-        ghiChu,
-
-      clientToken:
-        token
-
-    });
-
-
-  const url =
-    API_URL +
-    '?' +
-    params.toString();
+  appendHidden(
+    form,
+    'clientToken',
+    token
+  );
 
 
-  // ---------------------------------------------------
-  // Tạo SCRIPT
-  // ---------------------------------------------------
+  document.body.appendChild(form);
 
-  jsonpScript =
-    document.createElement(
-      'script'
+  form.submit();
+
+  document.body.removeChild(form);
+
+
+  submitTimeout =
+    setTimeout(
+      function() {
+
+        if (
+          waitingToken === token
+        ) {
+
+          waitingToken = null;
+
+          button.disabled = false;
+
+          setStatus(
+            '❌ Máy chủ không phản hồi.',
+            'error'
+          );
+
+        }
+
+      },
+      15000
     );
 
-
-  jsonpScript.src =
-    url;
+}
 
 
-  jsonpScript.async =
-    true;
+function appendHidden(
+  form,
+  name,
+  value
+) {
+
+  const input =
+    document.createElement('input');
+
+  input.type = 'hidden';
+
+  input.name = name;
+
+  input.value = value;
+
+  form.appendChild(input);
+
+}
 
 
-  // ---------------------------------------------------
-  // Nếu trình duyệt báo lỗi tải
-  // ---------------------------------------------------
+function scanNextOrder() {
 
-  jsonpScript.onerror =
-    function() {
+  if (waitingToken) {
+    return;
+  }
 
-      if (
-        waitingToken !== token
-      ) {
+  if (isScanning) {
+    return;
+  }
 
-        return;
+  document.getElementById(
+    'maSanPham'
+  ).value = '';
 
-      }
+  document.getElementById(
+    'tenSanPham'
+  ).value = '';
+
+  document.getElementById(
+    'loSanPham'
+  ).value = '';
+
+  document.getElementById(
+    'donViThung'
+  ).value = '';
+
+  document.getElementById(
+    'soLuongXuat'
+  ).value = '';
+
+  document.getElementById(
+    'nguoiYeuCau'
+  ).value = '';
+
+  document.getElementById(
+    'boPhan'
+  ).value = '';
+
+  document.getElementById(
+    'ghiChu'
+  ).value = '';
+
+  document.getElementById(
+    'submitButton'
+  ).disabled = false;
+
+  setStatus(
+    'Đang chuẩn bị quét lệnh tiếp theo...',
+    'info'
+  );
+
+  startScanner();
+
+}
 
 
-      waitingToken = null;
+window.addEventListener(
+  'message',
+  function(event) {
+
+    const data =
+      event.data;
 
 
-      button.disabled = false;
+    if (
+      !data ||
+      data.type !==
+        'QR_SUBMIT_RESULT'
+    ) {
+      return;
+    }
 
+
+    if (!waitingToken) {
+      return;
+    }
+
+
+    if (
+      data.clientToken !==
+      waitingToken
+    ) {
+      return;
+    }
+
+
+    if (submitTimeout) {
+
+      clearTimeout(
+        submitTimeout
+      );
+
+      submitTimeout = null;
+
+    }
+
+
+    waitingToken = null;
+
+
+    const button =
+      document.getElementById(
+        'submitButton'
+      );
+
+    button.disabled = false;
+
+
+    if (data.success) {
 
       setStatus(
-        '❌ Không kết nối được máy chủ.',
+        '✅ ' + data.message,
+        'success'
+      );
+
+
+      document.getElementById(
+        'maSanPham'
+      ).value = '';
+
+
+      document.getElementById(
+        'tenSanPham'
+      ).value = '';
+
+
+      document.getElementById(
+        'loSanPham'
+      ).value = '';
+
+
+      document.getElementById(
+        'donViThung'
+      ).value = '';
+
+
+      document.getElementById(
+        'soLuongXuat'
+      ).value = '';
+
+
+      document.getElementById(
+        'nguoiYeuCau'
+      ).value = '';
+
+
+      document.getElementById(
+        'boPhan'
+      ).value = '';
+
+
+      document.getElementById(
+        'ghiChu'
+      ).value = '';
+
+    }
+
+    else {
+
+      setStatus(
+        '❌ ' + data.message,
         'error'
       );
 
-
-      cleanupJSONP(
-        callbackName
-      );
-
-    };
-
-
-  // ---------------------------------------------------
-  // Đưa SCRIPT vào trang
-  // ---------------------------------------------------
-
-  document.body.appendChild(
-    jsonpScript
-  );
-
-
-  // ---------------------------------------------------
-  // Timeout
-  // ---------------------------------------------------
-
-  setTimeout(
-    function() {
-
-      if (
-        waitingToken === token
-      ) {
-
-        waitingToken = null;
-
-
-        button.disabled = false;
-
-
-        setStatus(
-          '❌ Máy chủ không phản hồi.',
-          'error'
-        );
-
-
-        cleanupJSONP(
-          callbackName
-        );
-
-      }
-
-    },
-    15000
-  );
-
-}
-
-
-/**
- * =====================================================
- * NHẬN KẾT QUẢ
- * =====================================================
- */
-
-function handleSubmitResult(
-  result,
-  callbackName
-) {
-
-
-  if (
-    !result
-  ) {
-
-    return;
+    }
 
   }
+);
 
-
-  // ---------------------------------------------------
-  // Kiểm tra token
-  // ---------------------------------------------------
-
-  if (
-    waitingToken &&
-    result.clientToken !==
-    waitingToken
-  ) {
-
-    return;
-
-  }
-
-
-  waitingToken = null;
-
-
-  // ---------------------------------------------------
-  // Mở lại nút
-  // ---------------------------------------------------
-
-  const button =
-    document.getElementById(
-      'submitButton'
-    );
-
-
-  button.disabled = false;
-
-
-  // ---------------------------------------------------
-  // Thành công
-  // ---------------------------------------------------
-
-  if (
-    result.success
-  ) {
-
-    setStatus(
-      '✅ ' +
-      result.message,
-      'success'
-    );
-
-
-    // -----------------------------------------------
-    // Xóa dữ liệu nhập tay
-    // -----------------------------------------------
-
-    document.getElementById(
-      'soLuong'
-    ).value = '';
-
-
-    document.getElementById(
-      'nguoiNhap'
-    ).value = '';
-
-
-    document.getElementById(
-      'ghiChu'
-    ).value = '';
-
-
-  }
-
-
-  // ---------------------------------------------------
-  // Lỗi
-  // ---------------------------------------------------
-
-  else {
-
-    setStatus(
-      '❌ ' +
-      result.message,
-      'error'
-    );
-
-  }
-
-
-  // ---------------------------------------------------
-  // Dọn JSONP
-  // ---------------------------------------------------
-
-  cleanupJSONP(
-    callbackName
-  );
-
-}
-
-
-/**
- * =====================================================
- * XÓA JSONP
- * =====================================================
- */
-
-function cleanupJSONP(
-  callbackName
-) {
-
-
-  try {
-
-    delete window[
-      callbackName
-    ];
-
-  }
-
-  catch (error) {
-
-    window[
-      callbackName
-    ] = undefined;
-
-  }
-
-
-  if (
-    jsonpScript &&
-    jsonpScript.parentNode
-  ) {
-
-    jsonpScript
-      .parentNode
-      .removeChild(
-        jsonpScript
-      );
-
-  }
-
-
-  jsonpScript = null;
-
-}
-
-
-/**
- * =====================================================
- * STATUS
- * =====================================================
- */
 
 function setStatus(
   message,
   type
 ) {
 
-
   const status =
     document.getElementById(
       'status'
     );
 
-
   status.innerText =
     message;
-
 
   status.className =
     type;
@@ -1153,7 +886,5 @@ function setStatus(
 
 </script>
 
-
 </body>
-
 </html>
