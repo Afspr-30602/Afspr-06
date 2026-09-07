@@ -2,132 +2,139 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Quét QR kho Vật Tư</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUÉT QR KHO VẬT TƯ</title>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <style>
 *{
-  box-sizing:border-box;
+  box-sizing:border-box
 }
 
 body{
   margin:0;
   padding:20px;
   background:#f3f4f6;
-  font-family:Arial,sans-serif;
+  font-family:Arial,sans-serif
 }
 
 .container{
   width:100%;
   max-width:480px;
-  margin:auto;
+  margin:auto
 }
 
 h1{
   text-align:center;
-  font-size:26px;
-  margin:10px 0 22px;
+  font-size:24px;
+  margin-bottom:20px
 }
 
 .card{
-  background:#fff;
-  border-radius:18px;
+  background:white;
+  border-radius:16px;
   padding:20px;
   margin-bottom:16px;
-  box-shadow:0 2px 10px rgba(0,0,0,.08);
+  box-shadow:0 2px 8px rgba(0,0,0,.08)
 }
 
 label{
   display:block;
   font-weight:bold;
-  font-size:18px;
-  margin-top:16px;
-  margin-bottom:7px;
+  margin-top:14px;
+  margin-bottom:6px
 }
 
 input,
 textarea{
   width:100%;
-  padding:14px;
-  border:1px solid #cbd5e1;
-  border-radius:10px;
-  font-size:17px;
-  background:#fff;
+  padding:13px;
+  border:1px solid #d1d5db;
+  border-radius:9px;
+  font-size:16px;
+  background:white
 }
 
 input[readonly]{
-  background:#f1f5f9;
+  background:#f1f5f9
 }
 
 textarea{
-  resize:vertical;
-  min-height:90px;
+  resize:vertical
 }
 
 button{
   width:100%;
   border:none;
-  border-radius:12px;
-  padding:16px;
+  border-radius:10px;
+  padding:14px;
   margin-top:15px;
-  font-size:18px;
+  font-size:17px;
   font-weight:bold;
-  cursor:pointer;
+  cursor:pointer
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed
 }
 
 #scanButton{
   background:#111827;
-  color:#fff;
+  color:white
+}
+
+#flashButton{
+  background:#f59e0b;
+  color:white;
+  display:none
+}
+
+#flashButton.active{
+  background:#dc2626
 }
 
 #submitButton{
   background:#2563eb;
-  color:#fff;
+  color:white
 }
 
 #nextButton{
   background:#16a34a;
-  color:#fff;
-}
-
-button:disabled{
-  opacity:.55;
-  cursor:not-allowed;
+  color:white
 }
 
 #reader{
   width:100%;
   margin-top:15px;
   overflow:hidden;
-  border-radius:12px;
+  border-radius:10px
 }
 
 #status{
   text-align:center;
   margin-top:15px;
   font-weight:bold;
-  min-height:25px;
-  font-size:17px;
+  min-height:24px
 }
 
 .success{
-  color:#15803d;
+  color:#15803d
 }
 
 .error{
-  color:#dc2626;
+  color:#dc2626
 }
 
 .info{
-  color:#374151;
+  color:#374151
 }
 
 .hiddenFrame{
   display:none;
   width:0;
   height:0;
-  border:0;
+  border:0
 }
 </style>
 </head>
@@ -147,6 +154,12 @@ button:disabled{
 </button>
 
 <div id="reader"></div>
+
+<button
+  id="flashButton"
+  onclick="toggleFlash()">
+  🔦 BẬT FLASH
+</button>
 
 <div
   id="status"
@@ -228,12 +241,14 @@ button:disabled{
 
 <script>
 
-const API_URL =
+const API_URL=
 'https://script.google.com/macros/s/AKfycby6at1PD83x1knfyIV9UYFd8-5uZMx8LrqLVrni1P2ot_RT6C4xku44fNeor83twkyy/exec';
 
 let scanner=null;
 let isScanning=false;
 let isSubmitting=false;
+let flashTrack=null;
+let flashOn=false;
 let submitTimer=null;
 
 function setStatus(message,type){
@@ -289,10 +304,14 @@ function startScanner(){
       'info'
     );
 
+    setupFlash();
+
   })
   .catch(function(error){
 
     isScanning=false;
+
+    hideFlashButton();
 
     setStatus(
       '❌ Không thể mở camera. Hãy kiểm tra quyền Camera.',
@@ -304,22 +323,237 @@ function startScanner(){
   });
 }
 
+function setupFlash(){
+
+  flashTrack=null;
+  flashOn=false;
+
+  const button=
+    document.getElementById(
+      'flashButton'
+    );
+
+  button.classList.remove('active');
+  button.textContent='🔦 BẬT FLASH';
+
+  try{
+
+    const videoElement=
+      document.querySelector(
+        '#reader video'
+      );
+
+    if(!videoElement){
+      hideFlashButton();
+      return;
+    }
+
+    const stream=
+      videoElement.srcObject;
+
+    if(!stream){
+      hideFlashButton();
+      return;
+    }
+
+    const tracks=
+      stream.getVideoTracks();
+
+    if(!tracks||!tracks.length){
+      hideFlashButton();
+      return;
+    }
+
+    const track=tracks[0];
+
+    const capabilities=
+      track.getCapabilities
+        ? track.getCapabilities()
+        : {};
+
+    if(!capabilities.torch){
+
+      hideFlashButton();
+      return;
+    }
+
+    flashTrack=track;
+
+    button.style.display='block';
+
+  }catch(error){
+
+    hideFlashButton();
+
+  }
+}
+
+function hideFlashButton(){
+
+  const button=
+    document.getElementById(
+      'flashButton'
+    );
+
+  button.style.display='none';
+
+  flashTrack=null;
+  flashOn=false;
+
+  button.classList.remove('active');
+  button.textContent='🔦 BẬT FLASH';
+}
+
+function toggleFlash(){
+
+  if(!flashTrack){
+
+    setupFlash();
+
+    if(!flashTrack){
+
+      setStatus(
+        '⚠️ Điện thoại hoặc trình duyệt không hỗ trợ bật Flash.',
+        'error'
+      );
+
+      return;
+    }
+  }
+
+  const newState=!flashOn;
+
+  flashTrack.applyConstraints({
+    advanced:[
+      {
+        torch:newState
+      }
+    ]
+  })
+  .then(function(){
+
+    flashOn=newState;
+
+    const button=
+      document.getElementById(
+        'flashButton'
+      );
+
+    if(flashOn){
+
+      button.textContent=
+        '🔦 TẮT FLASH';
+
+      button.classList.add(
+        'active'
+      );
+
+      setStatus(
+        '💡 Flash đang bật.',
+        'info'
+      );
+
+    }else{
+
+      button.textContent=
+        '🔦 BẬT FLASH';
+
+      button.classList.remove(
+        'active'
+      );
+
+      setStatus(
+        'Đưa QR vào khung camera.',
+        'info'
+      );
+
+    }
+
+  })
+  .catch(function(error){
+
+    setStatus(
+      '⚠️ Không thể điều khiển Flash trên thiết bị này.',
+      'error'
+    );
+
+    console.error(error);
+
+  });
+}
+
+function turnOffFlash(){
+
+  if(!flashTrack){
+    return;
+  }
+
+  if(!flashOn){
+    return;
+  }
+
+  flashTrack.applyConstraints({
+    advanced:[
+      {
+        torch:false
+      }
+    ]
+  })
+  .catch(function(){});
+
+  flashOn=false;
+
+  const button=
+    document.getElementById(
+      'flashButton'
+    );
+
+  button.textContent=
+    '🔦 BẬT FLASH';
+
+  button.classList.remove(
+    'active'
+  );
+}
+
+function stopScanner(){
+
+  turnOffFlash();
+
+  hideFlashButton();
+
+  if(!scanner){
+    isScanning=false;
+    return Promise.resolve();
+  }
+
+  return scanner.stop()
+    .then(function(){
+
+      isScanning=false;
+
+      scanner.clear();
+
+      scanner=null;
+
+    })
+    .catch(function(){
+
+      isScanning=false;
+      scanner=null;
+
+    });
+}
+
 function handleQRCode(decodedText){
 
   if(!scanner){
     return;
   }
 
-  scanner.stop()
+  stopScanner()
     .then(function(){
 
-      isScanning=false;
-      processQRCode(decodedText);
-
-    })
-    .catch(function(){
-
-      isScanning=false;
       processQRCode(decodedText);
 
     });
@@ -382,7 +616,7 @@ function processQRCode(text){
   ).focus();
 }
 
-function addHiddenField(
+function appendHidden(
   form,
   name,
   value
@@ -392,7 +626,9 @@ function addHiddenField(
     document.createElement('input');
 
   input.type='hidden';
+
   input.name=name;
+
   input.value=value;
 
   form.appendChild(input);
@@ -500,14 +736,18 @@ function submitData(){
     return;
   }
 
-  isSubmitting=true;
-
-  const submitButton=
+  const button=
     document.getElementById(
       'submitButton'
     );
 
-  submitButton.disabled=true;
+  if(button.disabled){
+    return;
+  }
+
+  isSubmitting=true;
+
+  button.disabled=true;
 
   setStatus(
     '⏳ Đang lưu dữ liệu...',
@@ -537,92 +777,86 @@ function submitData(){
     completed=true;
 
     if(submitTimer){
-      clearTimeout(submitTimer);
+
+      clearTimeout(
+        submitTimer
+      );
+
       submitTimer=null;
     }
 
     isSubmitting=false;
-    submitButton.disabled=false;
+
+    button.disabled=false;
 
     setStatus(
       '✅ Đã lưu dữ liệu thành công!',
       'success'
     );
 
-    document.getElementById(
-      'soLuongXuat'
-    ).value='';
-
-    document.getElementById(
-      'nguoiYeuCau'
-    ).value='';
-
-    document.getElementById(
-      'boPhan'
-    ).value='';
-
-    document.getElementById(
-      'ghiChu'
-    ).value='';
+    clearManualFields();
   };
 
   const form=
     document.createElement('form');
 
   form.method='POST';
+
   form.action=API_URL;
+
   form.target='submitFrame';
+
   form.style.display='none';
 
-  addHiddenField(
+  appendHidden(
     form,
     'maSanPham',
     maSanPham
   );
 
-  addHiddenField(
+  appendHidden(
     form,
     'tenSanPham',
     tenSanPham
   );
 
-  addHiddenField(
+  appendHidden(
     form,
     'loSanPham',
     loSanPham
   );
 
-  addHiddenField(
+  appendHidden(
     form,
     'donViThung',
     donViThung
   );
 
-  addHiddenField(
+  appendHidden(
     form,
     'soLuongXuat',
     soLuongXuat
   );
 
-  addHiddenField(
+  appendHidden(
     form,
     'nguoiYeuCau',
     nguoiYeuCau
   );
 
-  addHiddenField(
+  appendHidden(
     form,
     'boPhan',
     boPhan
   );
 
-  addHiddenField(
+  appendHidden(
     form,
     'ghiChu',
     ghiChu
   );
 
-  addHiddenField(
+  appendHidden(
     form,
     'clientToken',
     token
@@ -644,30 +878,36 @@ function submitData(){
       completed=true;
 
       isSubmitting=false;
-      submitButton.disabled=false;
+
+      button.disabled=false;
 
       setStatus(
         '⚠️ Đã gửi dữ liệu. Hãy kiểm tra Dữ liệu QR.',
         'success'
       );
 
-      document.getElementById(
-        'soLuongXuat'
-      ).value='';
-
-      document.getElementById(
-        'nguoiYeuCau'
-      ).value='';
-
-      document.getElementById(
-        'boPhan'
-      ).value='';
-
-      document.getElementById(
-        'ghiChu'
-      ).value='';
+      clearManualFields();
 
     },5000);
+}
+
+function clearManualFields(){
+
+  document.getElementById(
+    'soLuongXuat'
+  ).value='';
+
+  document.getElementById(
+    'nguoiYeuCau'
+  ).value='';
+
+  document.getElementById(
+    'boPhan'
+  ).value='';
+
+  document.getElementById(
+    'ghiChu'
+  ).value='';
 }
 
 function nextOrder(){
