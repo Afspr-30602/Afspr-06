@@ -1,342 +1,1264 @@
-const SPREADSHEET_ID = '1Lr29UB-BRXUhxjAcfLO4nbdHHY-yOYjtltapsd29IWM';
-const SHEET_NAME = 'Dữ liệu QR';
-const TOKEN_PREFIX = 'QR_PROCESSED_';
-const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const MA_HANG_PREFIX = 'T09.';
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Quét QR kho Vật Tư</title>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-function doGet(){
-  return HtmlService.createHtmlOutput('QR API is running')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+<style>
+*{
+  box-sizing:border-box
 }
 
-function doPost(e){
-  const clientToken = e && e.parameter && e.parameter.clientToken
-    ? String(e.parameter.clientToken).trim()
-    : '';
+body{
+  margin:0;
+  padding:20px;
+  background:#f3f4f6;
+  font-family:Arial,sans-serif
+}
+
+.container{
+  width:100%;
+  max-width:480px;
+  margin:auto
+}
+
+h1{
+  text-align:center;
+  font-size:26px;
+  margin:10px 0 22px
+}
+
+.card{
+  background:#fff;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:16px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08)
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  font-size:18px;
+  margin-top:16px;
+  margin-bottom:7px
+}
+
+input,
+textarea{
+  width:100%;
+  padding:14px;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  font-size:17px;
+  background:#fff
+}
+
+input[readonly]{
+  background:#f1f5f9
+}
+
+textarea{
+  resize:vertical;
+  min-height:90px
+}
+
+button{
+  width:100%;
+  border:none;
+  border-radius:12px;
+  padding:16px;
+  margin-top:15px;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer
+}
+
+#scanButton{
+  background:#111827;
+  color:#fff
+}
+
+#submitButton{
+  background:#2563eb;
+  color:#fff
+}
+
+#nextButton{
+  background:#16a34a;
+  color:#fff
+}
+
+#retryButton{
+  background:#f59e0b;
+  color:#fff;
+  display:none
+}
+
+#flashButton{
+  background:#f59e0b;
+  color:#fff;
+  display:none
+}
+
+#flashButton.active{
+  background:#dc2626
+}
+
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed
+}
+
+#reader{
+  width:100%;
+  margin-top:15px;
+  overflow:hidden;
+  border-radius:12px
+}
+
+#status{
+  text-align:center;
+  margin-top:15px;
+  font-weight:bold;
+  min-height:25px;
+  font-size:17px
+}
+
+.success{
+  color:#15803d
+}
+
+.error{
+  color:#dc2626
+}
+
+.info{
+  color:#374151
+}
+
+.hiddenFrame{
+  display:none;
+  width:0;
+  height:0;
+  border:0
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>QUÉT QR KHO VẬT TƯ</h1>
+
+<div class="card">
+
+<button
+  id="scanButton"
+  onclick="startScanner()">
+  📷 QUÉT QR
+</button>
+
+<div id="reader"></div>
+
+<button
+  id="flashButton"
+  onclick="toggleFlash()">
+  🔦 BẬT FLASH
+</button>
+
+<div
+  id="status"
+  class="info">
+</div>
+
+<button
+  id="retryButton"
+  onclick="retryPending()">
+  ↻ GỬI LẠI DỮ LIỆU CHỜ
+</button>
+
+</div>
+
+<div class="card">
+
+<label>Mã sản phẩm</label>
+
+<input
+  id="maSanPham"
+  type="text"
+  readonly>
+
+<label>Tên sản phẩm</label>
+
+<input
+  id="tenSanPham"
+  type="text"
+  readonly>
+
+<label>Lô sản phẩm</label>
+
+<input
+  id="loSanPham"
+  type="text"
+  readonly>
+
+<label>Đơn vị thùng</label>
+
+<input
+  id="donViThung"
+  type="text"
+  readonly>
+
+<label>Số lượng xuất</label>
+
+<input
+  id="soLuongXuat"
+  type="number"
+  min="1"
+  inputmode="numeric">
+
+<label>Số kg/cuộn</label>
+
+<input
+  id="soKgCuon"
+  type="text"
+  readonly>
+
+<label>Người yêu cầu</label>
+
+<input
+  id="nguoiYeuCau"
+  type="text"
+  autocomplete="name">
+
+<label>Bộ phận</label>
+
+<input
+  id="boPhan"
+  type="text">
+
+<label>Ghi chú</label>
+
+<textarea
+  id="ghiChu"
+  rows="3"></textarea>
+
+<button
+  id="submitButton"
+  onclick="submitData()">
+  GỬI DỮ LIỆU
+</button>
+
+<button
+  id="nextButton"
+  onclick="nextOrder()">
+  QUÉT LỆNH TIẾP THEO
+</button>
+
+</div>
+
+</div>
+
+<iframe
+  id="submitFrame"
+  name="submitFrame"
+  class="hiddenFrame">
+</iframe>
+
+<script>
+
+const API_URL =
+'https://script.google.com/macros/s/AKfycby6at1PD83x1knfyIV9UYFd8-5uZMx8LrqLVrni1P2ot_RT6C4xku44fNeor83twkyy/exec';
+
+const PENDING_KEY =
+'qrKhoVatTuPending';
+
+let scanner=null;
+let isScanning=false;
+let waitingToken=null;
+let submitTimeout=null;
+let submitCompleted=false;
+let flashOn=false;
+let pendingPayload=null;
+
+function setStatus(message,type){
+
+  const status =
+    document.getElementById('status');
+
+  status.textContent=message;
+
+  status.className =
+    type || 'info';
+}
+
+function createToken(){
+
+  return (
+    Date.now().toString() +
+    '_' +
+    Math.random()
+      .toString(36)
+      .substring(2) +
+    '_' +
+    Math.random()
+      .toString(36)
+      .substring(2)
+  );
+}
+
+function savePending(payload){
 
   try{
-    const data = e && e.parameter ? e.parameter : {};
 
-    const maSanPham = String(data.maSanPham || '').trim();
-    const tenSanPham = String(data.tenSanPham || '').trim();
-    const loSanPham = String(data.loSanPham || '').trim();
-    const donViThung = String(data.donViThung || '').trim();
-    const soLuongXuat = String(data.soLuongXuat || '').trim();
-    const soKgCuon = String(data.soKgCuon || '').trim();
-    const nguoiYeuCau = String(data.nguoiYeuCau || '').trim();
-    const boPhan = String(data.boPhan || '').trim();
-    const ghiChu = String(data.ghiChu || '').trim();
+    localStorage.setItem(
+      PENDING_KEY,
+      JSON.stringify(payload)
+    );
 
-    if(!maSanPham)
-      return createResponse(false, 'Thiếu mã sản phẩm.', clientToken);
+    pendingPayload=payload;
 
-    if(!soLuongXuat)
-      return createResponse(false, 'Thiếu số lượng xuất.', clientToken);
-
-    const quantity = Number(soLuongXuat);
-
-    if(!Number.isFinite(quantity) || quantity <= 0)
-      return createResponse(false, 'Số lượng xuất phải lớn hơn 0.', clientToken);
-
-    if(!nguoiYeuCau)
-      return createResponse(false, 'Thiếu người yêu cầu.', clientToken);
-
-    if(!boPhan)
-      return createResponse(false, 'Thiếu bộ phận.', clientToken);
-
-    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = spreadsheet.getSheetByName(SHEET_NAME);
-
-    if(!sheet)
-      return createResponse(false, 'Không tìm thấy sheet Dữ liệu QR.', clientToken);
-
-    const lock = LockService.getScriptLock();
-    lock.waitLock(10000);
-
-    try{
-      pruneProcessedTokens_();
-
-      if(clientToken && isTokenProcessed_(clientToken))
-        return createResponse(true, 'Dữ liệu đã được lưu trước đó.', clientToken);
-
-      sheet.appendRow([
-        new Date(),
-        maSanPham,
-        tenSanPham,
-        loSanPham,
-        donViThung,
-        quantity,
-        soKgCuon,
-        nguoiYeuCau,
-        boPhan,
-        ghiChu
-      ]);
-
-      if(clientToken)
-        markTokenProcessed_(clientToken);
-
-    }finally{
-      lock.releaseLock();
-    }
-
-    return createResponse(true, 'Đã lưu dữ liệu thành công!', clientToken);
+    document.getElementById(
+      'retryButton'
+    ).style.display='block';
 
   }catch(error){
-    console.error(JSON.stringify({
-      time: new Date().toISOString(),
-      clientToken: clientToken,
-      message: error && error.message ? error.message : String(error),
-      stack: error && error.stack ? error.stack : ''
-    }));
 
-    return createResponse(
-      false,
-      'Có lỗi xảy ra khi lưu dữ liệu: ' +
-      (error && error.message ? error.message : String(error)),
-      clientToken
-    );
+    console.error(error);
+
   }
 }
 
-function onEdit(e){
-  if(!e || !e.range) return;
+function loadPending(){
 
-  const range = e.range;
-  const sheet = range.getSheet();
+  try{
 
-  if(sheet.getName() !== 'Nhập kho') return;
+    const raw =
+      localStorage.getItem(
+        PENDING_KEY
+      );
 
-  const row = range.getRow();
-  const column = range.getColumn();
-  const numColumns = range.getNumColumns();
-
-  if(row < 2) return;
-
-  const lastColumn = column + numColumns - 1;
-
-  if(lastColumn < 2 || column > 5) return;
-
-  capNhatDanhMuc();
-}
-
-function capNhatDanhMuc(){
-  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-
-  const nhapKho = spreadsheet.getSheetByName('Nhập kho');
-  const danhMuc = spreadsheet.getSheetByName('DANH MỤC');
-
-  if(!nhapKho || !danhMuc) return;
-
-  const lastRowDanhMuc = danhMuc.getLastRow();
-
-  if(lastRowDanhMuc >= 4){
-    const rangeMaHang = danhMuc.getRange(
-      4,
-      2,
-      lastRowDanhMuc - 3,
-      1
-    );
-
-    const values = rangeMaHang.getValues();
-
-    values.forEach(row => {
-      const maHang = String(row[0] || '').trim();
-
-      if(maHang && !maHang.startsWith(MA_HANG_PREFIX))
-        row[0] = MA_HANG_PREFIX + maHang;
-    });
-
-    rangeMaHang.setValues(values);
-  }
-
-  const lastRowNhapKho = nhapKho.getLastRow();
-
-  if(lastRowNhapKho < 2) return;
-
-  const source = nhapKho.getRange(
-    2,
-    2,
-    lastRowNhapKho - 1,
-    4
-  ).getValues();
-
-  const maxRows = danhMuc.getMaxRows();
-
-  const existingValues = danhMuc.getRange(
-    4,
-    2,
-    maxRows - 3,
-    1
-  ).getValues();
-
-  const existingCodes = new Set();
-
-  existingValues.forEach(row => {
-    const code = String(row[0] || '').trim();
-
-    if(code) existingCodes.add(code);
-  });
-
-  const newRows = [];
-
-  source.forEach(row => {
-    const maSanPham = String(row[0] || '').trim();
-    const tenSanPham = String(row[1] || '').trim();
-    const donViTinh = String(row[3] || '').trim();
-
-    if(!maSanPham) return;
-    if(/_\d+$/.test(maSanPham)) return;
-
-    const maHang = maSanPham.startsWith(MA_HANG_PREFIX)
-      ? maSanPham
-      : MA_HANG_PREFIX + maSanPham;
-
-    if(!existingCodes.has(maHang)){
-      newRows.push([
-        maHang,
-        tenSanPham,
-        '',
-        donViTinh
-      ]);
-
-      existingCodes.add(maHang);
+    if(!raw){
+      return;
     }
-  });
 
-  if(!newRows.length) return;
-
-  const availableRows = [];
-
-  for(let i = 0; i < existingValues.length; i++){
-    const value = String(existingValues[i][0] || '').trim();
-
-    if(!value) availableRows.push(i + 4);
-
-    if(availableRows.length >= newRows.length) break;
-  }
-
-  if(availableRows.length < newRows.length){
-    const rowsNeeded = newRows.length - availableRows.length;
-    const currentMaxRows = danhMuc.getMaxRows();
-
-    danhMuc.insertRowsAfter(currentMaxRows, rowsNeeded);
-
-    for(let i = 0; i < rowsNeeded; i++){
-      availableRows.push(currentMaxRows + i + 1);
-    }
-  }
-
-  newRows.forEach((row, index) => {
-    const targetRow = availableRows[index];
-
-    danhMuc.getRange(targetRow, 2).setValue(row[0]);
-    danhMuc.getRange(targetRow, 3).setValue(row[1]);
-    danhMuc.getRange(targetRow, 5).setValue(row[3]);
-  });
-}
-
-function isTokenProcessed_(token){
-  if(!token) return false;
-
-  const value = PropertiesService
-    .getScriptProperties()
-    .getProperty(TOKEN_PREFIX + token);
-
-  return !!value;
-}
-
-function markTokenProcessed_(token){
-  PropertiesService
-    .getScriptProperties()
-    .setProperty(
-      TOKEN_PREFIX + token,
-      String(Date.now())
-    );
-}
-
-function pruneProcessedTokens_(){
-  const properties = PropertiesService.getScriptProperties();
-  const all = properties.getProperties();
-  const now = Date.now();
-
-  Object.keys(all).forEach(key => {
-    if(key.indexOf(TOKEN_PREFIX) !== 0) return;
-
-    const timestamp = Number(all[key]);
+    const payload =
+      JSON.parse(raw);
 
     if(
-      !Number.isFinite(timestamp) ||
-      now - timestamp > TOKEN_TTL_MS
+      !payload ||
+      !payload.clientToken
     ){
-      properties.deleteProperty(key);
+
+      localStorage.removeItem(
+        PENDING_KEY
+      );
+
+      return;
     }
+
+    pendingPayload=payload;
+
+    document.getElementById(
+      'retryButton'
+    ).style.display='block';
+
+    setStatus(
+      '⚠️ Có dữ liệu chưa nhận được xác nhận. Có thể gửi lại.',
+      'error'
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+}
+
+function clearPending(token){
+
+  if(
+    !pendingPayload ||
+    pendingPayload.clientToken===token
+  ){
+
+    try{
+
+      localStorage.removeItem(
+        PENDING_KEY
+      );
+
+    }catch(error){
+
+      console.error(error);
+
+    }
+
+    pendingPayload=null;
+
+    document.getElementById(
+      'retryButton'
+    ).style.display='none';
+
+  }
+}
+
+function startScanner(){
+
+  if(isScanning){
+    return;
+  }
+
+  const reader =
+    document.getElementById(
+      'reader'
+    );
+
+  reader.innerHTML='';
+
+  setStatus(
+    'Đang mở camera...',
+    'info'
+  );
+
+  scanner =
+    new Html5Qrcode(
+      'reader'
+    );
+
+  scanner.start(
+    {
+      facingMode:'environment'
+    },
+    {
+      fps:10,
+      qrbox:{
+        width:250,
+        height:250
+      }
+    },
+    function(decodedText){
+
+      handleQRCode(
+        decodedText
+      );
+
+    },
+    function(){}
+  )
+
+  .then(function(){
+
+    isScanning=true;
+
+    flashOn=false;
+
+    const flashButton =
+      document.getElementById(
+        'flashButton'
+      );
+
+    flashButton.style.display =
+      'block';
+
+    flashButton.textContent =
+      '🔦 BẬT FLASH';
+
+    flashButton.classList.remove(
+      'active'
+    );
+
+    setStatus(
+      'Đưa QR vào khung camera.',
+      'info'
+    );
+
+  })
+
+  .catch(function(error){
+
+    isScanning=false;
+
+    document.getElementById(
+      'flashButton'
+    ).style.display='none';
+
+    setStatus(
+      '❌ Không thể mở camera. Hãy kiểm tra quyền Camera.',
+      'error'
+    );
+
+    console.error(error);
+
   });
 }
 
-function createResponse(
-  success,
-  message,
-  clientToken
+function handleQRCode(decodedText){
+
+  if(!scanner){
+    return;
+  }
+
+  turnOffFlash()
+
+    .then(function(){
+
+      return scanner.stop();
+
+    })
+
+    .catch(function(){
+
+      return Promise.resolve();
+
+    })
+
+    .then(function(){
+
+      isScanning=false;
+
+      document.getElementById(
+        'flashButton'
+      ).style.display='none';
+
+      processQRCode(
+        decodedText
+      );
+
+    });
+}
+
+async function toggleFlash(){
+
+  if(
+    !scanner ||
+    !isScanning
+  ){
+
+    setStatus(
+      '⚠️ Camera chưa sẵn sàng.',
+      'error'
+    );
+
+    return;
+  }
+
+  const button =
+    document.getElementById(
+      'flashButton'
+    );
+
+  const nextState =
+    !flashOn;
+
+  try{
+
+    if(
+      typeof scanner.applyVideoConstraints !==
+      'function'
+    ){
+
+      throw new Error(
+        'Torch không được hỗ trợ.'
+      );
+
+    }
+
+    await scanner.applyVideoConstraints(
+      {
+        advanced:[
+          {
+            torch:nextState
+          }
+        ]
+      }
+    );
+
+    flashOn=nextState;
+
+    if(flashOn){
+
+      button.textContent =
+        '🔦 TẮT FLASH';
+
+      button.classList.add(
+        'active'
+      );
+
+      setStatus(
+        '💡 FLASH đang bật.',
+        'info'
+      );
+
+    }else{
+
+      button.textContent =
+        '🔦 BẬT FLASH';
+
+      button.classList.remove(
+        'active'
+      );
+
+      setStatus(
+        'Đưa QR vào khung camera.',
+        'info'
+      );
+
+    }
+
+  }catch(error){
+
+    flashOn=false;
+
+    button.textContent =
+      '🔦 BẬT FLASH';
+
+    button.classList.remove(
+      'active'
+    );
+
+    setStatus(
+      '⚠️ Thiết bị hoặc trình duyệt không hỗ trợ bật FLASH.',
+      'error'
+    );
+
+    console.error(error);
+
+  }
+}
+
+async function turnOffFlash(){
+
+  if(
+    !scanner ||
+    !flashOn
+  ){
+
+    flashOn=false;
+
+    return;
+  }
+
+  try{
+
+    if(
+      typeof scanner.applyVideoConstraints ===
+      'function'
+    ){
+
+      await scanner.applyVideoConstraints(
+        {
+          advanced:[
+            {
+              torch:false
+            }
+          ]
+        }
+      );
+
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+  flashOn=false;
+
+  const button =
+    document.getElementById(
+      'flashButton'
+    );
+
+  button.textContent =
+    '🔦 BẬT FLASH';
+
+  button.classList.remove(
+    'active'
+  );
+
+  button.style.display='none';
+}
+
+function processQRCode(text){
+
+  const parts =
+    text
+      .split('|')
+      .map(function(item){
+
+        return item.trim();
+
+      });
+
+  const maSanPham =
+    parts[0] || '';
+
+  const tenSanPham =
+    parts[1] || '';
+
+  const loSanPham =
+    parts[2] || '';
+
+  const donViThung =
+    parts[3] || '';
+
+  const soKgCuon =
+    parts[4] || '';
+
+  if(!maSanPham){
+
+    setStatus(
+      '❌ QR thiếu mã sản phẩm.',
+      'error'
+    );
+
+    return;
+  }
+
+  document.getElementById(
+    'maSanPham'
+  ).value=maSanPham;
+
+  document.getElementById(
+    'tenSanPham'
+  ).value=tenSanPham;
+
+  document.getElementById(
+    'loSanPham'
+  ).value=loSanPham;
+
+  document.getElementById(
+    'donViThung'
+  ).value=donViThung;
+
+  document.getElementById(
+    'soKgCuon'
+  ).value=soKgCuon;
+
+  setStatus(
+    '✅ Đã quét QR thành công.',
+    'success'
+  );
+
+  document.getElementById(
+    'soLuongXuat'
+  ).focus();
+}
+
+function appendHidden(
+  form,
+  name,
+  value
 ){
-  const payload = {
-    type: 'QR_SUBMIT_RESULT',
-    success: success,
-    message: message,
-    clientToken: clientToken
+
+  const input =
+    document.createElement(
+      'input'
+    );
+
+  input.type='hidden';
+
+  input.name=name;
+
+  input.value=value;
+
+  form.appendChild(
+    input
+  );
+}
+
+function finishSubmitSuccess(
+  token
+){
+
+  if(
+    submitCompleted &&
+    waitingToken!==token
+  ){
+
+    return;
+  }
+
+  submitCompleted=true;
+
+  waitingToken=null;
+
+  if(submitTimeout){
+
+    clearTimeout(
+      submitTimeout
+    );
+
+    submitTimeout=null;
+
+  }
+
+  clearPending(token);
+
+  const button =
+    document.getElementById(
+      'submitButton'
+    );
+
+  button.disabled=false;
+
+  setStatus(
+    '✅ Đã lưu dữ liệu thành công!',
+    'success'
+  );
+
+  document.getElementById(
+    'soLuongXuat'
+  ).value='';
+
+  document.getElementById(
+    'nguoiYeuCau'
+  ).value='';
+
+  document.getElementById(
+    'boPhan'
+  ).value='';
+
+  document.getElementById(
+    'ghiChu'
+  ).value='';
+}
+
+function finishSubmitError(
+  message
+){
+
+  if(submitTimeout){
+
+    clearTimeout(
+      submitTimeout
+    );
+
+    submitTimeout=null;
+
+  }
+
+  waitingToken=null;
+
+  document.getElementById(
+    'submitButton'
+  ).disabled=false;
+
+  setStatus(
+    '❌ ' + message,
+    'error'
+  );
+}
+
+function sendPayload(
+  payload
+){
+
+  const button =
+    document.getElementById(
+      'submitButton'
+    );
+
+  button.disabled=true;
+
+  submitCompleted=false;
+
+  waitingToken =
+    payload.clientToken;
+
+  setStatus(
+    '⏳ Đang lưu dữ liệu...',
+    'info'
+  );
+
+  const frame =
+    document.getElementById(
+      'submitFrame'
+    );
+
+  frame.onload=function(){
+
+    if(
+      waitingToken !==
+      payload.clientToken
+    ){
+
+      return;
+    }
+
+    finishSubmitSuccess(
+      payload.clientToken
+    );
+
   };
 
-  const json = JSON.stringify(payload)
-    .replace(/</g, '\\u003c')
-    .replace(/>/g, '\\u003e')
-    .replace(/&/g, '\\u0026');
+  const form =
+    document.createElement(
+      'form'
+    );
 
-  const html =
-    '<!DOCTYPE html>' +
-    '<html>' +
-    '<head>' +
-    '<meta charset="UTF-8">' +
-    '</head>' +
-    '<body>' +
-    '<script>' +
-    'window.parent.postMessage(' +
-    json +
-    ', "*");' +
-    '</script>' +
-    '</body>' +
-    '</html>';
+  form.method='POST';
 
-  return HtmlService
-    .createHtmlOutput(html)
-    .setXFrameOptionsMode(
-      HtmlService.XFrameOptionsMode.ALLOWALL
+  form.action=API_URL;
+
+  form.target='submitFrame';
+
+  form.style.display='none';
+
+  Object.keys(payload)
+    .forEach(function(key){
+
+      appendHidden(
+        form,
+        key,
+        payload[key]
+      );
+
+    });
+
+  document.body.appendChild(
+    form
+  );
+
+  form.submit();
+
+  document.body.removeChild(
+    form
+  );
+
+  submitTimeout =
+    setTimeout(
+      function(){
+
+        if(
+          waitingToken ===
+          payload.clientToken
+        ){
+
+          waitingToken=null;
+
+          button.disabled=false;
+
+          savePending(
+            payload
+          );
+
+          setStatus(
+            '⚠️ Chưa nhận được xác nhận. Dữ liệu đã được lưu tạm trên máy; có thể gửi lại.',
+            'error'
+          );
+
+        }
+
+      },
+      15000
     );
 }
 
-function testDoPost(){
-  const e = {
-    parameter: {
-      maSanPham: 'SP00125',
-      tenSanPham: 'Sản phẩm ABC',
-      loSanPham: 'LO20260906',
-      donViThung: 'Thùng',
-      soLuongXuat: '10',
-      soKgCuon: '25',
-      nguoiYeuCau: 'Nguyễn Văn A',
-      boPhan: 'Kho',
-      ghiChu: 'Kiểm tra hệ thống',
-      clientToken: 'TEST_TOKEN_001'
-    }
+function submitData(){
+
+  const maSanPham =
+    document.getElementById(
+      'maSanPham'
+    ).value.trim();
+
+  const tenSanPham =
+    document.getElementById(
+      'tenSanPham'
+    ).value.trim();
+
+  const loSanPham =
+    document.getElementById(
+      'loSanPham'
+    ).value.trim();
+
+  const donViThung =
+    document.getElementById(
+      'donViThung'
+    ).value.trim();
+
+  const soLuongXuat =
+    document.getElementById(
+      'soLuongXuat'
+    ).value.trim();
+
+  const soKgCuon =
+    document.getElementById(
+      'soKgCuon'
+    ).value.trim();
+
+  const nguoiYeuCau =
+    document.getElementById(
+      'nguoiYeuCau'
+    ).value.trim();
+
+  const boPhan =
+    document.getElementById(
+      'boPhan'
+    ).value.trim();
+
+  const ghiChu =
+    document.getElementById(
+      'ghiChu'
+    ).value.trim();
+
+  if(!maSanPham){
+
+    setStatus(
+      '❌ Hãy quét QR trước.',
+      'error'
+    );
+
+    return;
+  }
+
+  if(!soLuongXuat){
+
+    setStatus(
+      '❌ Vui lòng nhập số lượng xuất.',
+      'error'
+    );
+
+    return;
+  }
+
+  const quantity =
+    Number(
+      soLuongXuat
+    );
+
+  if(
+    !Number.isFinite(quantity) ||
+    quantity<=0
+  ){
+
+    setStatus(
+      '❌ Số lượng xuất phải lớn hơn 0.',
+      'error'
+    );
+
+    return;
+  }
+
+  if(!nguoiYeuCau){
+
+    setStatus(
+      '❌ Vui lòng nhập người yêu cầu.',
+      'error'
+    );
+
+    return;
+  }
+
+  if(!boPhan){
+
+    setStatus(
+      '❌ Vui lòng nhập bộ phận.',
+      'error'
+    );
+
+    return;
+  }
+
+  if(
+    API_URL ===
+    'PASTE_APPS_SCRIPT_URL_HERE'
+  ){
+
+    setStatus(
+      '❌ Chưa cấu hình URL Apps Script.',
+      'error'
+    );
+
+    return;
+  }
+
+  const button =
+    document.getElementById(
+      'submitButton'
+    );
+
+  if(button.disabled){
+    return;
+  }
+
+  const payload={
+
+    maSanPham:
+      maSanPham,
+
+    tenSanPham:
+      tenSanPham,
+
+    loSanPham:
+      loSanPham,
+
+    donViThung:
+      donViThung,
+
+    soLuongXuat:
+      soLuongXuat,
+
+    soKgCuon:
+      soKgCuon,
+
+    nguoiYeuCau:
+      nguoiYeuCau,
+
+    boPhan:
+      boPhan,
+
+    ghiChu:
+      ghiChu,
+
+    clientToken:
+      createToken()
+
   };
 
-  const result = doPost(e);
+  savePending(
+    payload
+  );
 
-  Logger.log(result.getContent());
+  sendPayload(
+    payload
+  );
 }
 
-function onOpen(){
-  SpreadsheetApp
-    .getUi()
-    .createMenu('CẬP NHẬT DANH MỤC')
-    .addItem('Cập nhật ngay', 'capNhatDanhMuc')
-    .addToUi();
+function retryPending(){
+
+  if(!pendingPayload){
+
+    loadPending();
+
+  }
+
+  if(!pendingPayload){
+
+    setStatus(
+      'Không có dữ liệu chờ gửi.',
+      'info'
+    );
+
+    return;
+  }
+
+  const button =
+    document.getElementById(
+      'submitButton'
+    );
+
+  if(button.disabled){
+    return;
+  }
+
+  sendPayload(
+    pendingPayload
+  );
 }
+
+window.addEventListener(
+  'message',
+  function(event){
+
+    const data =
+      event.data;
+
+    if(
+      !data ||
+      data.type !==
+      'QR_SUBMIT_RESULT'
+    ){
+
+      return;
+    }
+
+    if(
+      !waitingToken ||
+      data.clientToken !==
+      waitingToken
+    ){
+
+      return;
+    }
+
+    if(data.success){
+
+      finishSubmitSuccess(
+        data.clientToken
+      );
+
+    }else{
+
+      finishSubmitError(
+        data.message ||
+        'Không thể lưu dữ liệu.'
+      );
+
+    }
+
+  }
+);
+
+function nextOrder(){
+
+  if(isScanning){
+    return;
+  }
+
+  document.getElementById(
+    'maSanPham'
+  ).value='';
+
+  document.getElementById(
+    'tenSanPham'
+  ).value='';
+
+  document.getElementById(
+    'loSanPham'
+  ).value='';
+
+  document.getElementById(
+    'donViThung'
+  ).value='';
+
+  document.getElementById(
+    'soLuongXuat'
+  ).value='';
+
+  document.getElementById(
+    'soKgCuon'
+  ).value='';
+
+  document.getElementById(
+    'nguoiYeuCau'
+  ).value='';
+
+  document.getElementById(
+    'boPhan'
+  ).value='';
+
+  document.getElementById(
+    'ghiChu'
+  ).value='';
+
+  setStatus(
+    'Sẵn sàng quét lệnh tiếp theo.',
+    'info'
+  );
+
+  startScanner();
+}
+
+loadPending();
+
+</script>
+
+</body>
+</html>
